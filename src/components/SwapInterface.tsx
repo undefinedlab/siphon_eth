@@ -1,8 +1,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import "./SwapInterface.css";
 import ConnectButton from "./ConnectButton";
+import UnifiedBalanceDisplay from "./UnifiedBalanceDisplay";
 import TokenSelector from "./TokenSelector";
+import { isInitialized, transferTokens, bridgeTokens, initializeWithProvider, getUnifiedBalances } from "../lib/nexus";
 import { WalletInfo } from "../lib/walletManager";
 
 export default function SwapInterface() {
@@ -21,26 +24,130 @@ export default function SwapInterface() {
   const [connectedWallet, setConnectedWallet] = useState<WalletInfo | null>(null);
   const [isTransferring, setIsTransferring] = useState(false);
   const [swaps, setSwaps] = useState([{ 
-    from: "ETH", 
+    from: "SOL", 
     to: "USDC", 
     amount: "", 
     liquidity: "internal", 
     transactionMode: "single",
-    liquidityChain: "ETH"
+    liquidityChain: "SOL"
   }]);
   const [withdrawInstructions, setWithdrawInstructions] = useState([
-    { chain: "ETH", token: "USDC", amount: "", address: "" }
+    { chain: "SOL", token: "USDC", amount: "", address: "" }
   ]);
   const [depositInputs, setDepositInputs] = useState([
-    { chain: "ETH", token: "ETH", amount: "" }
+    { chain: "SOL", token: "SOL", amount: "" }
   ]);
 
   const handleDeposit = () => {
     console.log(`Depositing to Siphon Vault`, depositInputs);
   };
 
+  const handleSwap = async () => {
+    console.log('handleSwap called');
+    console.log('Current state:', { nexusInitialized, swapAmount, swapFromToken });
+    
+    if (!nexusInitialized) {
+      alert('Please connect wallet first');
+      return;
+    }
 
+    if (!swapAmount || parseFloat(swapAmount) <= 0) {
+      alert('Please enter a valid amount');
+      return;
+    }
 
+    if (!swapFromToken) {
+      alert('Please select a token');
+      return;
+    }
+
+    if (!withdrawAddress) {
+      alert('Please enter a withdrawal address');
+      return;
+    }
+
+    setIsTransferring(true);
+
+    try {
+      // Parse the selected token-chain (format: "TOKEN-CHAIN")
+      const [selectedToken, selectedChain] = swapFromToken.split('-');
+      console.log(`Bridging ${swapAmount} ${selectedToken} from ${selectedChain} to Ethereum Sepolia`);
+      
+      // Bridge to Ethereum Sepolia testnet (chain ID: 11155111)
+      const ethereumSepoliaChainId = 11155111; // Ethereum Sepolia testnet
+      
+      // Use the selected token from the dropdown
+      const tokenSymbol = selectedToken || 'ETH'; // Fallback to ETH if no selection
+      
+      console.log('Calling transferTokens with:', {
+        token: tokenSymbol,
+        amount: swapAmount,
+        chainId: ethereumSepoliaChainId,
+        recipient: withdrawAddress
+      });
+      
+      // Use transferTokens to send to the specified withdrawal address
+      const result = await transferTokens(
+        ethereumSepoliaChainId,
+        tokenSymbol,
+        swapAmount,
+        withdrawAddress
+      );
+      
+      console.log('Bridge transaction result:', result);
+      
+      if (result.success) {
+        console.log(`Successfully transferred ${swapAmount} ${selectedToken} from ${selectedChain} to ${withdrawAddress} on Ethereum Sepolia`);
+        
+        // Wait a moment for the transaction to be processed
+        console.log('Waiting for transaction confirmation...');
+        await new Promise(resolve => setTimeout(resolve, 3000)); // Wait 3 seconds
+        
+        // Refresh balances after successful transaction
+        try {
+          console.log('Refreshing balances after successful transfer...');
+          const refreshedBalances = await getUnifiedBalances();
+          setUnifiedBalances(refreshedBalances);
+          console.log('Balances refreshed successfully');
+          
+          // Clear the form after successful transfer
+          setSwapAmount('');
+          setSwapFromToken('');
+          setWithdrawAddress('');
+        } catch (refreshError: any) {
+          console.error('Failed to refresh balances:', refreshError);
+        }
+      } else {
+        alert(`Transfer failed: ${result.error}`);
+      }
+    } catch (error: any) {
+      console.error('Transfer failed:', error);
+      alert(`Transfer failed: ${error.message}`);
+    } finally {
+      setIsTransferring(false);
+    }
+  };
+
+  const handleWithdraw = () => {
+    console.log(`Withdrawing to ${withdrawAddress}`);
+  };
+
+  const addSwap = () => {
+    setSwaps([...swaps, { 
+      from: "SOL", 
+      to: "USDC", 
+      amount: "", 
+      liquidity: "internal", 
+      transactionMode: "single",
+      liquidityChain: "SOL"
+    }]);
+  };
+
+  const removeSwap = (index: number) => {
+    if (swaps.length > 1) {
+      setSwaps(swaps.filter((_, i) => i !== index));
+    }
+  };
 
   const updateSwap = (index: number, field: string, value: string) => {
     const updatedSwaps = swaps.map((swap, i) => 
@@ -84,6 +191,17 @@ export default function SwapInterface() {
   };
 
 
+  useEffect(() => {
+    // Delay to ensure styles are loaded
+    const timer = setTimeout(() => {
+      setIsLoaded(true);
+    }, 100);
+
+    // Check if Nexus SDK is already initialized
+    setNexusInitialized(isInitialized());
+
+    return () => clearTimeout(timer);
+  }, []);
 
   // Auto-select token when balances are loaded
   useEffect(() => {
@@ -108,7 +226,12 @@ export default function SwapInterface() {
 
   return (
     <div className="siphon-container">
-  
+      {/* Left Sidebar for Unified Balances - Only show when wallet is connected */}
+      {connectedWallet && (
+        <div className="sidebar-left">
+          <UnifiedBalanceDisplay balances={unifiedBalances} />
+        </div>
+      )}
 
       <div className={`siphon-window ${isLoaded ? 'loaded' : ''} ${isProMode ? 'pro-mode' : 'simple-mode'}`}>
 
@@ -140,7 +263,44 @@ export default function SwapInterface() {
               <div className="step-content">
                 <ConnectButton 
                   className="step-connect-button" 
-             
+                  onConnected={async (wallet) => {
+                    setWalletConnected(true);
+                    setConnectedWallet(wallet);
+                    
+                    // Auto-initialize Nexus SDK for EVM wallets
+                    if (wallet.chain === 'EVM' && !nexusInitialized) {
+                      try {
+                        const eth = (window as any)?.ethereum;
+                        if (eth) {
+                          await initializeWithProvider(eth);
+                          setNexusInitialized(true);
+                          console.log('Nexus SDK auto-initialized for EVM wallet');
+                          
+                      // Auto-fetch balances after initialization
+                      try {
+                        const balances = await getUnifiedBalances();
+                        setUnifiedBalances(balances);
+                        console.log('Balances auto-fetched after SDK initialization');
+                        
+                        // Set default token if none selected
+                        if (!swapFromToken && Array.isArray(balances) && balances.length > 0) {
+                          const firstTokenWithBalance = balances.find(token => 
+                            token && token.symbol && parseFloat(token.balance) > 0
+                          );
+                          if (firstTokenWithBalance) {
+                            console.log('Auto-selecting token:', firstTokenWithBalance.symbol);
+                            setSwapFromToken(firstTokenWithBalance.symbol);
+                          }
+                        }
+                      } catch (balanceError: any) {
+                        console.error('Auto-fetch balances failed:', balanceError);
+                      }
+                        }
+                      } catch (error: any) {
+                        console.error('Auto-initialization failed:', error);
+                      }
+                    }
+                  }}
                 />
               </div>
             </div>
@@ -222,7 +382,20 @@ export default function SwapInterface() {
               </div>
             </div>
 
-  
+            <button 
+              className="action-button" 
+              onClick={handleSwap}
+              disabled={!nexusInitialized || isTransferring}
+            >
+              {isTransferring ? (
+                <span className="loading-content">
+                  <span className="spinner"></span>
+                  Transferring...
+                </span>
+              ) : (
+                nexusInitialized ? 'Transfer to Address' : 'Connect Wallet First'
+              )}
+            </button>
           </div>
         ) : (
           <div className={`three-columns ${isLoaded ? 'loaded' : ''}`}>
@@ -471,10 +644,18 @@ export default function SwapInterface() {
                 </div>
               ))}
               
-        
+              <button className="add-swap-button" onClick={addSwap}>
+                + Add Swap
+              </button>
             </div>
             
-          
+            <button 
+              className="action-button" 
+              onClick={handleSwap}
+              disabled={!nexusInitialized}
+            >
+              {nexusInitialized ? 'Execute Strategy' : 'Initialize Nexus SDK First'}
+            </button>
           </div>
 
           {/* Column 3: Withdraw */}
@@ -560,7 +741,13 @@ export default function SwapInterface() {
               </button>
             </div>
             
-       
+            <button 
+              className="action-button" 
+              onClick={handleWithdraw}
+              disabled={!nexusInitialized}
+            >
+              {nexusInitialized ? 'Execute Withdrawals' : 'Initialize Nexus SDK First'}
+            </button>
           </div>
         </div>
         )}
