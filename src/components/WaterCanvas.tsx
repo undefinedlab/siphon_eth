@@ -94,9 +94,9 @@ export default function WaterCanvas() {
     ctx.font = `bold ${mainFontSize}px Source Code Pro`;
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    ctx.textRendering = "geometricPrecision" as any;
-    (ctx as any).imageSmoothingEnabled = true;
-    (ctx as any).imageSmoothingQuality = "high";
+    ctx.textRendering = "geometricPrecision" as CanvasTextRendering;
+    (ctx as CanvasRenderingContext2D & { imageSmoothingEnabled: boolean }).imageSmoothingEnabled = true;
+    (ctx as CanvasRenderingContext2D & { imageSmoothingQuality: string }).imageSmoothingQuality = "high";
     
     // Calculate text width to position logo
     const textMetrics = ctx.measureText("siphon");
