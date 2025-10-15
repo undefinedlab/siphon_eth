@@ -5,8 +5,8 @@ import "./SwapInterface.css";
 import ConnectButton from "./ConnectButton";
 import UnifiedBalanceDisplay from "./UnifiedBalanceDisplay";
 import TokenSelector from "./TokenSelector";
-import { isInitialized, transferTokens, bridgeTokens, initializeWithProvider, getUnifiedBalances } from "../lib/nexus";
-import { WalletInfo } from "../lib/walletManager";
+import { isInitialized, transferTokens, bridgeTokens, initializeWithProvider, getUnifiedBalances } from "../../lib/nexus";
+import { WalletInfo } from "../../lib/walletManager";
 
 export default function SwapInterface() {
   const [isLoaded, setIsLoaded] = useState(false);

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import SwapInterface from "./SwapInterface";
+import SwapInterface from "../swap_face/SwapInterface";
 
 export default function Nav() {
   const [showSwapModal, setShowSwapModal] = useState(false);

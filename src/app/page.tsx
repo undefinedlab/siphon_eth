@@ -1,6 +1,6 @@
-import Nav from "@/components/Nav";
-import AppFooter from "@/components/AppFooter";
-import WaterCanvas from "@/components/WaterCanvas";
+import Nav from "@/components/theme/Nav";
+import AppFooter from "@/components/theme/AppFooter";
+import WaterCanvas from "@/components/theme/WaterCanvas";
 
 export default function Home() {
   return (
