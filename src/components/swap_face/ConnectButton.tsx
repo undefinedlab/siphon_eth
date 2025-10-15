@@ -26,8 +26,8 @@ export default function ConnectButton({ className, onConnected }: { className?: 
       } else {
         alert(`Failed to connect wallet: ${result.error}`);
       }
-    } catch (error: any) {
-      alert(`Connection error: ${error.message}`);
+    } catch (error: unknown) {
+      alert(`Connection error: ${error instanceof Error ? error.message : 'Unknown error'}`);
     } finally {
       setIsConnecting(false);
     }

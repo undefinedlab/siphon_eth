@@ -9,8 +9,36 @@ interface Balance {
   symbol: string;
 }
 
+interface TokenOption {
+  value: string;
+  label: string;
+  balance: string;
+  symbol?: string;
+  key?: string;
+  shortName?: string;
+  displayName?: string;
+}
+
 interface TokenSelectorProps {
-  balances: any;
+  balances: Array<{
+    symbol: string;
+    balance: string;
+    balanceInFiat?: number;
+    breakdown?: Array<{
+      balance: string;
+      balanceInFiat?: number;
+      chain: {
+        id: number;
+        logo: string;
+        name: string;
+      };
+      contractAddress?: `0x${string}`;
+      decimals?: number;
+      isNative?: boolean;
+    }>;
+    decimals?: number;
+    icon?: string;
+  }> | null;
   selectedToken: string;
   onTokenSelect: (token: string) => void;
   className?: string;
@@ -31,18 +59,47 @@ export default function TokenSelector({ balances, selectedToken, onTokenSelect, 
 
   // Extract tokens with chain information from balances
   const getTokenChainOptions = () => {
-    const tokenChains: any[] = [];
+    const tokenChains: TokenOption[] = [];
     
     try {
       if (Array.isArray(balances)) {
         // Handle the actual Nexus SDK balance structure
-        balances.forEach((tokenBalance: any) => {
-          if (tokenBalance && tokenBalance.symbol && parseFloat(tokenBalance.balance) > 0) {
+        balances.forEach((tokenBalance: {
+          symbol: string;
+          balance: string;
+          balanceInFiat?: number;
+          breakdown?: Array<{
+            balance: string;
+            balanceInFiat?: number;
+            chain: {
+              id: number;
+              logo: string;
+              name: string;
+            };
+            contractAddress?: `0x${string}`;
+            decimals?: number;
+            isNative?: boolean;
+          }>;
+          decimals?: number;
+          icon?: string;
+        }) => {
+          if (tokenBalance && tokenBalance.symbol && tokenBalance.balance && parseFloat(tokenBalance.balance) > 0) {
             // Process each chain in the breakdown
             if (tokenBalance.breakdown && Array.isArray(tokenBalance.breakdown)) {
-              tokenBalance.breakdown.forEach((chainBalance: any) => {
-                if (parseFloat(chainBalance.balance) > 0) {
-                  const chainName = chainBalance.chain?.name || chainBalance.chain?.id || 'Unknown';
+              tokenBalance.breakdown.forEach((chainBalance: {
+                balance: string;
+                balanceInFiat?: number;
+                chain: {
+                  id: number;
+                  logo: string;
+                  name: string;
+                };
+                contractAddress?: `0x${string}`;
+                decimals?: number;
+                isNative?: boolean;
+              }) => {
+                if (chainBalance.balance && parseFloat(chainBalance.balance) > 0) {
+                  const chainName = chainBalance.chain.name || chainBalance.chain.id.toString() || 'Unknown';
                   // Create short chain identifier with smaller text
                   const chainShort = chainName === 'Base' ? 'B' : 
                                    chainName === 'Sepolia' ? 'S' : 
@@ -51,14 +108,13 @@ export default function TokenSelector({ balances, selectedToken, onTokenSelect, 
                                    chainName.charAt(0).toUpperCase();
                   
                   tokenChains.push({
-                    symbol: tokenBalance.symbol,
-                    chain: chainName,
+                    value: `${tokenBalance.symbol}-${chainName}`,
+                    label: `${tokenBalance.symbol} on ${chainShort}`,
                     balance: chainBalance.balance,
-                    balanceInFiat: chainBalance.balanceInFiat || 0,
-                    decimals: tokenBalance.decimals || 18,
-                    displayName: `${tokenBalance.symbol} (${chainName})`,
-                    shortName: `${tokenBalance.symbol} ${chainShort}`,
-                    key: `${tokenBalance.symbol}-${chainName}`
+                    symbol: tokenBalance.symbol,
+                    key: `${tokenBalance.symbol}-${chainName}`,
+                    shortName: chainShort,
+                    displayName: `${tokenBalance.symbol} on ${chainShort}`
                   });
                 }
               });
@@ -66,30 +122,32 @@ export default function TokenSelector({ balances, selectedToken, onTokenSelect, 
           }
         });
       } else if (typeof balances === 'object') {
-        Object.values(balances).forEach((chainBalances: any) => {
+        Object.values(balances).forEach((chainBalances: unknown) => {
           if (Array.isArray(chainBalances)) {
             chainBalances.forEach((balance: Balance) => {
               if (balance && balance.symbol && parseFloat(balance.balance) > 0) {
                 tokenChains.push({
-                  symbol: balance.symbol,
-                  chain: balance.chain,
+                  value: `${balance.symbol}-${balance.chain}`,
+                  label: `${balance.symbol} on ${balance.chain}`,
                   balance: balance.balance,
-                  displayName: `${balance.symbol} (${balance.chain})`,
-                  key: `${balance.symbol}-${balance.chain}`
+                  symbol: balance.symbol,
+                  key: `${balance.symbol}-${balance.chain}`,
+                  displayName: `${balance.symbol} on ${balance.chain}`
                 });
               }
             });
           } else if (typeof chainBalances === 'object' && chainBalances !== null) {
-            Object.values(chainBalances).forEach((nestedBalances: any) => {
+            Object.values(chainBalances).forEach((nestedBalances: unknown) => {
               if (Array.isArray(nestedBalances)) {
                 nestedBalances.forEach((balance: Balance) => {
                   if (balance && balance.symbol && parseFloat(balance.balance) > 0) {
                     tokenChains.push({
-                      symbol: balance.symbol,
-                      chain: balance.chain,
+                      value: `${balance.symbol}-${balance.chain}`,
+                      label: `${balance.symbol} on ${balance.chain}`,
                       balance: balance.balance,
-                      displayName: `${balance.symbol} (${balance.chain})`,
-                      key: `${balance.symbol}-${balance.chain}`
+                      symbol: balance.symbol,
+                      key: `${balance.symbol}-${balance.chain}`,
+                      displayName: `${balance.symbol} on ${balance.chain}`
                     });
                   }
                 });
@@ -119,7 +177,7 @@ export default function TokenSelector({ balances, selectedToken, onTokenSelect, 
   const selectedOption = tokenChainOptions.find(option => option.key === selectedToken);
   const displayText = selectedOption ? (
     <span>
-      {selectedOption.symbol} <span className="chain-short">{selectedOption.shortName.split(' ')[1]}</span>
+      {selectedOption.symbol} <span className="chain-short">{selectedOption.shortName?.split(' ')[1] || ''}</span>
     </span>
   ) : 'Select Token & Chain';
 
@@ -140,7 +198,7 @@ export default function TokenSelector({ balances, selectedToken, onTokenSelect, 
               key={option.key}
               className="token-option"
               onClick={() => {
-                onTokenSelect(option.key);
+                onTokenSelect(option.key || '');
                 setIsOpen(false);
               }}
             >

@@ -19,7 +19,25 @@ export default function SwapInterface() {
   
   // Nexus SDK state
   const [nexusInitialized, setNexusInitialized] = useState(false);
-  const [unifiedBalances, setUnifiedBalances] = useState<any>(null);
+  const [unifiedBalances, setUnifiedBalances] = useState<Array<{
+    symbol: string;
+    balance: string;
+    balanceInFiat?: number;
+    breakdown?: Array<{
+      balance: string;
+      balanceInFiat?: number;
+      chain: {
+        id: number;
+        logo: string;
+        name: string;
+      };
+      contractAddress?: `0x${string}`;
+      decimals?: number;
+      isNative?: boolean;
+    }>;
+    decimals?: number;
+    icon?: string;
+  }> | null>(null);
   const [walletConnected, setWalletConnected] = useState(false);
   const [connectedWallet, setConnectedWallet] = useState<WalletInfo | null>(null);
   const [isTransferring, setIsTransferring] = useState(false);
@@ -114,15 +132,15 @@ export default function SwapInterface() {
           setSwapAmount('');
           setSwapFromToken('');
           setWithdrawAddress('');
-        } catch (refreshError: any) {
+        } catch (refreshError: unknown) {
           console.error('Failed to refresh balances:', refreshError);
         }
       } else {
         alert(`Transfer failed: ${result.error}`);
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Transfer failed:', error);
-      alert(`Transfer failed: ${error.message}`);
+      alert(`Transfer failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
     } finally {
       setIsTransferring(false);
     }
@@ -210,11 +228,11 @@ export default function SwapInterface() {
         token && token.symbol && parseFloat(token.balance) > 0
       );
       if (firstTokenWithBalance && firstTokenWithBalance.breakdown) {
-        const firstChainWithBalance = firstTokenWithBalance.breakdown.find((chain: any) => 
+        const firstChainWithBalance = firstTokenWithBalance.breakdown.find((chain: { balance: string; chain: { id: number; logo: string; name: string } }) => 
           parseFloat(chain.balance) > 0
         );
         if (firstChainWithBalance) {
-          const chainName = firstChainWithBalance.chain?.name || firstChainWithBalance.chain?.id || 'Unknown';
+          const chainName = firstChainWithBalance.chain.name || firstChainWithBalance.chain.id.toString() || 'Unknown';
           const tokenChainKey = `${firstTokenWithBalance.symbol}-${chainName}`;
           console.log('Auto-selecting token-chain from balances:', tokenChainKey);
           setSwapFromToken(tokenChainKey);
@@ -270,7 +288,7 @@ export default function SwapInterface() {
                     // Auto-initialize Nexus SDK for EVM wallets
                     if (wallet.chain === 'EVM' && !nexusInitialized) {
                       try {
-                        const eth = (window as any)?.ethereum;
+                        const eth = (window as Window & { ethereum?: unknown })?.ethereum;
                         if (eth) {
                           await initializeWithProvider(eth);
                           setNexusInitialized(true);
@@ -292,11 +310,11 @@ export default function SwapInterface() {
                             setSwapFromToken(firstTokenWithBalance.symbol);
                           }
                         }
-                      } catch (balanceError: any) {
+                      } catch (balanceError: unknown) {
                         console.error('Auto-fetch balances failed:', balanceError);
                       }
                         }
-                      } catch (error: any) {
+                      } catch (error: unknown) {
                         console.error('Auto-initialization failed:', error);
                       }
                     }
@@ -378,7 +396,7 @@ export default function SwapInterface() {
                 🔒 Privacy: Standard swap with basic anonymity
               </span>
               <div className="privacy-tooltip">
-                Standard swap uses public pools with basic privacy. For maximum anonymity, use Pro mode with Siphon Protocol's advanced privacy features.
+                Standard swap uses public pools with basic privacy. For maximum anonymity, use Pro mode with Siphon Protocol&apos;s advanced privacy features.
               </div>
             </div>
 

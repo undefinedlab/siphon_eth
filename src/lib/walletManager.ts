@@ -17,12 +17,12 @@ class WalletManager {
 
   async connectMetaMask(): Promise<WalletConnectionResult> {
     try {
-      const eth = (window as any)?.ethereum;
+      const eth = (window as Window & { ethereum?: unknown })?.ethereum;
       if (!eth) {
         return { success: false, error: 'MetaMask not detected. Please install MetaMask.' };
       }
 
-      const accounts = await eth.request({ method: 'eth_requestAccounts' });
+      const accounts = await (eth as { request: (params: { method: string }) => Promise<string[]> }).request({ method: 'eth_requestAccounts' });
       if (accounts.length === 0) {
         return { success: false, error: 'No accounts found' };
       }
@@ -38,20 +38,20 @@ class WalletManager {
 
       this.connectedWallets.set('metamask', wallet);
       return { success: true, wallet };
-    } catch (error: any) {
-      return { success: false, error: error.message || 'Failed to connect MetaMask' };
+    } catch (error: unknown) {
+      return { success: false, error: error instanceof Error ? error.message : 'Failed to connect MetaMask' };
     }
   }
 
   async connectSolana(): Promise<WalletConnectionResult> {
     try {
       // Check if Phantom wallet is available
-      const phantom = (window as any)?.solana?.isPhantom;
+      const phantom = (window as Window & { solana?: { isPhantom?: boolean } })?.solana?.isPhantom;
       if (!phantom) {
         return { success: false, error: 'Phantom wallet not detected. Please install Phantom.' };
       }
 
-      const response = await (window as any).solana.connect();
+        const response = await (window as unknown as { solana: { connect: () => Promise<{ publicKey: { toString: () => string } }> } }).solana.connect();
       const address = response.publicKey.toString();
 
       const wallet: WalletInfo = {
@@ -64,20 +64,20 @@ class WalletManager {
 
       this.connectedWallets.set('solana', wallet);
       return { success: true, wallet };
-    } catch (error: any) {
-      return { success: false, error: error.message || 'Failed to connect Solana wallet' };
+    } catch (error: unknown) {
+      return { success: false, error: error instanceof Error ? error.message : 'Failed to connect Solana wallet' };
     }
   }
 
   async connectBitcoin(): Promise<WalletConnectionResult> {
     try {
       // Check if a Bitcoin wallet is available (e.g., Xverse, Unisat, etc.)
-      const bitcoinWallet = (window as any)?.unisat;
+      const bitcoinWallet = (window as Window & { unisat?: unknown })?.unisat;
       if (!bitcoinWallet) {
         return { success: false, error: 'Bitcoin wallet not detected. Please install a Bitcoin wallet like Unisat or Xverse.' };
       }
 
-      const accounts = await bitcoinWallet.requestAccounts();
+      const accounts = await (bitcoinWallet as { requestAccounts: () => Promise<string[]> }).requestAccounts();
       if (accounts.length === 0) {
         return { success: false, error: 'No Bitcoin accounts found' };
       }
@@ -93,8 +93,8 @@ class WalletManager {
 
       this.connectedWallets.set('bitcoin', wallet);
       return { success: true, wallet };
-    } catch (error: any) {
-      return { success: false, error: error.message || 'Failed to connect Bitcoin wallet' };
+    } catch (error: unknown) {
+      return { success: false, error: error instanceof Error ? error.message : 'Failed to connect Bitcoin wallet' };
     }
   }
 
@@ -114,8 +114,8 @@ class WalletManager {
 
       this.connectedWallets.set('xmr', wallet);
       return { success: true, wallet };
-    } catch (error: any) {
-      return { success: false, error: error.message || 'Failed to connect Monero wallet' };
+    } catch (error: unknown) {
+      return { success: false, error: error instanceof Error ? error.message : 'Failed to connect Monero wallet' };
     }
   }
 

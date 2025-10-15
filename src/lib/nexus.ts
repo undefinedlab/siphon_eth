@@ -1,4 +1,4 @@
-import { NexusSDK } from '@avail-project/nexus-core';
+import { NexusSDK, SUPPORTED_TOKENS, SUPPORTED_CHAINS_IDS, EthereumProvider } from '@avail-project/nexus-core';
 
 export const sdk = new NexusSDK({ network: 'testnet' });
 
@@ -7,14 +7,14 @@ export function isInitialized() {
   return sdk.isInitialized();
 }
 
-export async function initializeWithProvider(provider: any) {
+export async function initializeWithProvider(provider: unknown) {
   if (!provider) throw new Error('No EIP-1193 provider (e.g., MetaMask) found');
   
   //If the SDK is already initialized, return
   if (sdk.isInitialized()) return;
 
   //If the SDK is not initialized, initialize it with the provider passed as a parameter
-  await sdk.initialize(provider);
+    await sdk.initialize(provider as unknown as EthereumProvider);
 }
 
 export async function deinit() {
@@ -51,19 +51,19 @@ export async function bridgeTokens(token: string, amount: string, chainId: numbe
     
     // Use the  Nexus SDK bridge method
     const result = await sdk.bridge({
-      token: token.toUpperCase() as any, // Convert to supported token format
+      token: token.toUpperCase() as SUPPORTED_TOKENS, // Convert to supported token format
       amount: parseFloat(amount),
-      chainId: chainId as any, // Convert to supported chain ID format
+      chainId: chainId as SUPPORTED_CHAINS_IDS, // Convert to supported chain ID format
       sourceChains: sourceChains
     });
     
     console.log('SDK bridge result:', result);
     return result;
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Bridge failed:', error);
     return { 
       success: false, 
-      error: error.message || 'Bridge transaction failed' 
+      error: error instanceof Error ? error.message : 'Bridge transaction failed' 
     };
   }
 }
@@ -87,19 +87,19 @@ export async function transferTokens(chainId: number, token: string, amount: str
     
     // Use the actual Nexus SDK transfer method
     const result = await sdk.transfer({
-      chainId: chainId as any,
-      token: token.toUpperCase() as any,
+      chainId: chainId as SUPPORTED_CHAINS_IDS,
+      token: token.toUpperCase() as SUPPORTED_TOKENS,
       amount: parseFloat(amount),
       recipient: recipient as `0x${string}` // Type assertion for address format
     });
     
     console.log('SDK transfer result:', result);
     return result;
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Transfer failed:', error);
     return { 
       success: false, 
-      error: error.message || 'Transfer transaction failed' 
+      error: error instanceof Error ? error.message : 'Transfer transaction failed' 
     };
   }
 }

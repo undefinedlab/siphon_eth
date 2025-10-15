@@ -1,13 +1,26 @@
 'use client';
 
-interface Balance {
-  chain: string;
-  token: string;
-  balance: string;
+interface UnifiedBalance {
   symbol: string;
+  balance: string;
+  balanceInFiat?: number;
+  breakdown?: Array<{
+    balance: string;
+    balanceInFiat?: number;
+    chain: {
+      id: number;
+      logo: string;
+      name: string;
+    };
+    contractAddress?: `0x${string}`;
+    decimals?: number;
+    isNative?: boolean;
+  }>;
+  decimals?: number;
+  icon?: string;
 }
 
-export default function UnifiedBalanceDisplay({ balances }: { balances: any }) {
+export default function UnifiedBalanceDisplay({ balances }: { balances: UnifiedBalance[] | null }) {
   if (!balances) {
     return (
       <div className="balance-display">
@@ -21,7 +34,7 @@ export default function UnifiedBalanceDisplay({ balances }: { balances: any }) {
   console.log('Unified balances structure:', balances);
 
   // Handle the actual Nexus SDK balance structure
-  let tokenBalances: any[] = [];
+  let tokenBalances: UnifiedBalance[] = [];
   
   try {
     if (Array.isArray(balances)) {
@@ -62,7 +75,7 @@ export default function UnifiedBalanceDisplay({ balances }: { balances: any }) {
   }
 
   // Group balances by token symbol
-  const groupedBalances: { [token: string]: any[] } = {};
+  const groupedBalances: { [token: string]: UnifiedBalance[] } = {};
   tokenBalances.forEach(token => {
     if (token && token.symbol) {
       if (!groupedBalances[token.symbol]) {
@@ -118,12 +131,23 @@ export default function UnifiedBalanceDisplay({ balances }: { balances: any }) {
                 </div>
               </div>
               <div className="chain-breakdown">
-                {tokenBalances[0]?.breakdown?.map((chainBalance: any, index: number) => {
+                {tokenBalances[0]?.breakdown?.map((chainBalance: {
+                  balance: string;
+                  balanceInFiat?: number;
+                  chain: {
+                    id: number;
+                    logo: string;
+                    name: string;
+                  };
+                  contractAddress?: `0x${string}`;
+                  decimals?: number;
+                  isNative?: boolean;
+                }, index: number) => {
                   // Debug: Log the chain balance structure
                   console.log(`Chain balance ${index}:`, chainBalance);
                   
                   // Extract chain name from nested chain object
-                  const chainName = chainBalance?.chain?.name || chainBalance?.chain?.id || chainBalance?.name || 'Unknown';
+                  const chainName = chainBalance.chain.name || chainBalance.chain.id.toString() || 'Unknown';
                   const chainAmount = parseFloat(chainBalance?.balance || '0');
                   
                   // Only show chains with positive balance
