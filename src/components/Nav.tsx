@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import SwapInterface from "./SwapInterface";
 
 export default function Nav() {
   const [showSwapModal, setShowSwapModal] = useState(false);
@@ -31,7 +32,7 @@ export default function Nav() {
       {showSwapModal && (
         <div className="modal-overlay" onClick={() => setShowSwapModal(false)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-          
+            <SwapInterface />
           </div>
         </div>
       )}
