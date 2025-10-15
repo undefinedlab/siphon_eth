@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { isInitialized, transferTokens, bridgeTokens, initializeWithProvider, getUnifiedBalances } from "../lib/nexus";
+import ConnectButton from "./ConnectButton";
+import TokenSelector from "./TokenSelector";
 import { WalletInfo } from "../lib/walletManager";
 
 export default function SwapInterface() {
@@ -38,112 +39,8 @@ export default function SwapInterface() {
     console.log(`Depositing to Siphon Vault`, depositInputs);
   };
 
-  const handleSwap = async () => {
-    console.log('handleSwap called');
-    console.log('Current state:', { nexusInitialized, swapAmount, swapFromToken });
-    
-    if (!nexusInitialized) {
-      alert('Please connect wallet first');
-      return;
-    }
 
-    if (!swapAmount || parseFloat(swapAmount) <= 0) {
-      alert('Please enter a valid amount');
-      return;
-    }
 
-    if (!swapFromToken) {
-      alert('Please select a token');
-      return;
-    }
-
-    if (!withdrawAddress) {
-      alert('Please enter a withdrawal address');
-      return;
-    }
-
-    setIsTransferring(true);
-
-    try {
-      // Parse the selected token-chain (format: "TOKEN-CHAIN")
-      const [selectedToken, selectedChain] = swapFromToken.split('-');
-      console.log(`Bridging ${swapAmount} ${selectedToken} from ${selectedChain} to Ethereum Sepolia`);
-      
-      // Bridge to Ethereum Sepolia testnet (chain ID: 11155111)
-      const ethereumSepoliaChainId = 11155111; // Ethereum Sepolia testnet
-      
-      // Use the selected token from the dropdown
-      const tokenSymbol = selectedToken || 'ETH'; // Fallback to ETH if no selection
-      
-      console.log('Calling transferTokens with:', {
-        token: tokenSymbol,
-        amount: swapAmount,
-        chainId: ethereumSepoliaChainId,
-        recipient: withdrawAddress
-      });
-      
-      // Use transferTokens to send to the specified withdrawal address
-      const result = await transferTokens(
-        ethereumSepoliaChainId,
-        tokenSymbol,
-        swapAmount,
-        withdrawAddress
-      );
-      
-      console.log('Bridge transaction result:', result);
-      
-      if (result.success) {
-        console.log(`Successfully transferred ${swapAmount} ${selectedToken} from ${selectedChain} to ${withdrawAddress} on Ethereum Sepolia`);
-        
-        // Wait a moment for the transaction to be processed
-        console.log('Waiting for transaction confirmation...');
-        await new Promise(resolve => setTimeout(resolve, 3000)); // Wait 3 seconds
-        
-        // Refresh balances after successful transaction
-        try {
-          console.log('Refreshing balances after successful transfer...');
-          const refreshedBalances = await getUnifiedBalances();
-          setUnifiedBalances(refreshedBalances);
-          console.log('Balances refreshed successfully');
-          
-          // Clear the form after successful transfer
-          setSwapAmount('');
-          setSwapFromToken('');
-          setWithdrawAddress('');
-        } catch (refreshError: any) {
-          console.error('Failed to refresh balances:', refreshError);
-        }
-      } else {
-        alert(`Transfer failed: ${result.error}`);
-      }
-    } catch (error: any) {
-      console.error('Transfer failed:', error);
-      alert(`Transfer failed: ${error.message}`);
-    } finally {
-      setIsTransferring(false);
-    }
-  };
-
-  const handleWithdraw = () => {
-    console.log(`Withdrawing to ${withdrawAddress}`);
-  };
-
-  const addSwap = () => {
-    setSwaps([...swaps, { 
-      from: "SOL", 
-      to: "USDC", 
-      amount: "", 
-      liquidity: "internal", 
-      transactionMode: "single",
-      liquidityChain: "SOL"
-    }]);
-  };
-
-  const removeSwap = (index: number) => {
-    if (swaps.length > 1) {
-      setSwaps(swaps.filter((_, i) => i !== index));
-    }
-  };
 
   const updateSwap = (index: number, field: string, value: string) => {
     const updatedSwaps = swaps.map((swap, i) => 
@@ -187,17 +84,6 @@ export default function SwapInterface() {
   };
 
 
-  useEffect(() => {
-    // Delay to ensure styles are loaded
-    const timer = setTimeout(() => {
-      setIsLoaded(true);
-    }, 100);
-
-    // Check if Nexus SDK is already initialized
-    setNexusInitialized(isInitialized());
-
-    return () => clearTimeout(timer);
-  }, []);
 
   // Auto-select token when balances are loaded
   useEffect(() => {
@@ -252,7 +138,10 @@ export default function SwapInterface() {
                 <span className="step-title">Connect Wallet</span>
               </div>
               <div className="step-content">
-              
+                <ConnectButton 
+                  className="step-connect-button" 
+             
+                />
               </div>
             </div>
 
@@ -265,7 +154,12 @@ export default function SwapInterface() {
                   onChange={(e) => setSwapAmount(e.target.value)}
                 />
                 <div className="token-selector">
-              
+                  <TokenSelector
+                    balances={unifiedBalances}
+                    selectedToken={swapFromToken}
+                    onTokenSelect={setSwapFromToken}
+                    className="token-select"
+                  />
                 </div>
               </div>
 
@@ -328,20 +222,7 @@ export default function SwapInterface() {
               </div>
             </div>
 
-            <button 
-              className="action-button" 
-              onClick={handleSwap}
-              disabled={!nexusInitialized || isTransferring}
-            >
-              {isTransferring ? (
-                <span className="loading-content">
-                  <span className="spinner"></span>
-                  Transferring...
-                </span>
-              ) : (
-                nexusInitialized ? 'Transfer to Address' : 'Connect Wallet First'
-              )}
-            </button>
+  
           </div>
         ) : (
           <div className={`three-columns ${isLoaded ? 'loaded' : ''}`}>
@@ -418,7 +299,7 @@ export default function SwapInterface() {
               <div className="deposit-stats">
                 <div className="stat-row">
                   <span>Total Deposits</span>
-                  <span>{`${depositInputs.length} transaction${depositInputs.length !== 1 ? 's' : ''}`}</span>
+                  <span>{depositInputs.length} transaction{depositInputs.length !== 1 ? 's' : ''}</span>
                 </div>
                 <div className="stat-row">
                   <span>Deposit Fee</span>
@@ -590,18 +471,10 @@ export default function SwapInterface() {
                 </div>
               ))}
               
-              <button className="add-swap-button" onClick={addSwap}>
-                + Add Swap
-              </button>
+        
             </div>
             
-            <button 
-              className="action-button" 
-              onClick={handleSwap}
-              disabled={!nexusInitialized}
-            >
-              {nexusInitialized ? 'Execute Strategy' : 'Initialize Nexus SDK First'}
-            </button>
+          
           </div>
 
           {/* Column 3: Withdraw */}
@@ -687,13 +560,7 @@ export default function SwapInterface() {
               </button>
             </div>
             
-            <button 
-              className="action-button" 
-              onClick={handleWithdraw}
-              disabled={!nexusInitialized}
-            >
-              {nexusInitialized ? 'Execute Withdrawals' : 'Initialize Nexus SDK First'}
-            </button>
+       
           </div>
         </div>
         )}
