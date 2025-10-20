@@ -51,7 +51,7 @@ export default function TokenSelector({ balances, selectedToken, onTokenSelect, 
     return (
       <div className="token-selector-custom">
         <button className={`token-selector-button ${className}`} disabled>
-          Select Token & Chain
+          Select Token
         </button>
       </div>
     );
@@ -168,7 +168,7 @@ export default function TokenSelector({ balances, selectedToken, onTokenSelect, 
   if (tokenChainOptions.length === 0) {
     return (
       <select className={className} disabled>
-        <option>Select Token & Chain</option>
+        <option>Select Token</option>
       </select>
     );
   }
@@ -179,7 +179,7 @@ export default function TokenSelector({ balances, selectedToken, onTokenSelect, 
     <span>
       {selectedOption.symbol} <span className="chain-short">{selectedOption.shortName?.split(' ')[1] || ''}</span>
     </span>
-  ) : 'Select Token & Chain';
+  ) : 'Select Token';
 
   return (
     <div className="token-selector-custom">

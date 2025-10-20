@@ -47,7 +47,9 @@ export default function SwapInterface() {
     amount: "", 
     liquidity: "internal", 
     transactionMode: "single",
-    liquidityChain: "SOL"
+    liquidityChain: "SOL",
+    chain: "SOL",
+    dex: "Uniswap"
   }]);
   const [withdrawInstructions, setWithdrawInstructions] = useState([
     { chain: "SOL", token: "USDC", amount: "", address: "" }
@@ -157,7 +159,9 @@ export default function SwapInterface() {
       amount: "", 
       liquidity: "internal", 
       transactionMode: "single",
-      liquidityChain: "SOL"
+      liquidityChain: "SOL",
+      chain: "SOL",
+      dex: "Uniswap"
     }]);
   };
 
@@ -244,29 +248,30 @@ export default function SwapInterface() {
 
   return (
     <div className="siphon-container">
-      {/* Left Sidebar for Unified Balances - Only show when wallet is connected */}
-      {connectedWallet && (
-        <div className="sidebar-left">
+      {/* Floating Mode Toggle */}
+      <div className="floating-mode-toggle">
+        <button 
+          className={`toggle-button ${!isProMode ? 'active' : ''}`}
+          onClick={() => setIsProMode(false)}
+        >
+          Swap
+        </button>
+        <button 
+          className={`toggle-button ${isProMode ? 'active' : ''}`}
+          onClick={() => setIsProMode(true)}
+        >
+          Pro
+        </button>
+      </div>
+
+      {/* Left Sidebar for Unified Balances - Only show when wallet is connected and in simple mode */}
+      {connectedWallet && !isProMode && (
+        <div className="absolute-balance-sidebar">
           <UnifiedBalanceDisplay balances={unifiedBalances} />
         </div>
       )}
 
       <div className={`siphon-window ${isLoaded ? 'loaded' : ''} ${isProMode ? 'pro-mode' : 'simple-mode'}`}>
-
-        <div className="mode-toggle">
-          <button 
-            className={`toggle-button ${!isProMode ? 'active' : ''}`}
-            onClick={() => setIsProMode(false)}
-          >
-            Simple
-          </button>
-          <button 
-            className={`toggle-button ${isProMode ? 'active' : ''}`}
-            onClick={() => setIsProMode(true)}
-          >
-            Pro
-          </button>
-        </div>
 
         {!isProMode ? (
           <div className={`simple-swap ${isLoaded ? 'loaded' : ''}`}>
@@ -591,6 +596,41 @@ export default function SwapInterface() {
                           />
                           <span>External</span>
                         </label>
+                      </div>
+                    </div>
+
+                    <div className="option-group">
+                      <label className="option-label">
+                        Chain & DEX
+                        <span className="option-tooltip" data-tooltip="Select the blockchain network and decentralized exchange for this swap.">?</span>
+                      </label>
+                      <div className="chain-dex-row">
+                        <div className="token-selector">
+                          <select
+                            value={swap.chain}
+                            onChange={(e) => updateSwap(index, 'chain', e.target.value)}
+                          >
+                            <option value="SOL">Solana</option>
+                            <option value="ETH">Ethereum</option>
+                            <option value="BTC">Bitcoin</option>
+                            <option value="POLYGON">Polygon</option>
+                            <option value="ARBITRUM">Arbitrum</option>
+                            <option value="BASE">Base</option>
+                          </select>
+                        </div>
+                        <div className="token-selector">
+                          <select
+                            value={swap.dex}
+                            onChange={(e) => updateSwap(index, 'dex', e.target.value)}
+                          >
+                            <option value="Uniswap">Uniswap</option>
+                            <option value="SushiSwap">SushiSwap</option>
+                            <option value="PancakeSwap">PancakeSwap</option>
+                            <option value="Curve">Curve</option>
+                            <option value="Balancer">Balancer</option>
+                            <option value="1inch">1inch</option>
+                          </select>
+                        </div>
                       </div>
                     </div>
 

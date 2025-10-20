@@ -9,7 +9,7 @@ import {
   renderFragmentShader,
 } from "@/lib/shaders";
 
-export default function WaterCanvas() {
+export default function SoftHorizonCanvas() {
   const containerRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -64,6 +64,8 @@ export default function WaterCanvas() {
       uniforms: {
         textureA: { value: null },
         textureB: { value: null },
+        resolution: { value: new THREE.Vector2(width, height) },
+        time: { value: 0 },
       },
       vertexShader: renderVertexShader,
       fragmentShader: renderFragmentShader,
@@ -94,9 +96,9 @@ export default function WaterCanvas() {
     ctx.font = `bold ${mainFontSize}px Source Code Pro`;
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    ctx.textRendering = "geometricPrecision" as CanvasTextRendering;
-    (ctx as CanvasRenderingContext2D & { imageSmoothingEnabled: boolean }).imageSmoothingEnabled = true;
-    (ctx as CanvasRenderingContext2D & { imageSmoothingQuality: string }).imageSmoothingQuality = "high";
+    ctx.textRendering = "geometricPrecision" as any;
+    (ctx as any).imageSmoothingEnabled = true;
+    (ctx as any).imageSmoothingQuality = "high";
     
     // Calculate text width to position logo
     const textMetrics = ctx.measureText("siphon");
@@ -193,8 +195,10 @@ export default function WaterCanvas() {
 
     let rafId = 0;
     const animate = () => {
+      const currentTime = performance.now() / 1000;
       (simMaterial.uniforms.frame.value as number) = frame++;
-      (simMaterial.uniforms.time.value as number) = performance.now() / 1000;
+      (simMaterial.uniforms.time.value as number) = currentTime;
+      (renderMaterial.uniforms.time.value as number) = currentTime;
 
       (simMaterial.uniforms.textureA.value as THREE.Texture) = rtA.texture;
       renderer.setRenderTarget(rtB);
