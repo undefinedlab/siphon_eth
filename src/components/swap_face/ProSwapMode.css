@@ -1,0 +1,448 @@
+/* ProSwapMode.css */
+
+/* Pro Mode Styles */
+.three-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  height: 100%;
+  gap: 0;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 0.4s ease, transform 0.4s ease;
+}
+
+.three-columns.loaded {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.column {
+  background: transparent;
+  border-right: 1px solid rgba(255, 255, 255, 0.05);
+  padding: 3rem;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.column:last-child {
+  border-right: none;
+}
+
+.column-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.step-number {
+  width: 28px;
+  height: 28px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 12px;
+}
+
+.column h3 {
+  font-size: 22px;
+  font-weight: 600;
+  margin: 0;
+  letter-spacing: 0.5px;
+}
+
+.step-title {
+  position: relative;
+  cursor: help;
+}
+
+.step-title:hover::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  padding: 1.5rem;
+  font-size: 14px;
+  line-height: 1.6;
+  max-width: 400px;
+  width: 350px;
+  z-index: 1000;
+  backdrop-filter: blur(10px);
+  white-space: normal;
+  margin-top: 0.5rem;
+}
+
+.column-description {
+  margin-bottom: 1rem;
+  opacity: 0.7;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.step-explanation {
+  margin-bottom: 2rem;
+  opacity: 0.6;
+  font-size: 13px;
+  line-height: 1.4;
+  font-style: italic;
+}
+
+/* Deposit Section Styles */
+.deposit-section {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.deposit-item {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  padding: 1rem;
+}
+
+.deposit-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.deposit-label {
+  font-size: 12px;
+  opacity: 0.6;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 500;
+}
+
+.remove-deposit {
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 18px;
+  cursor: pointer;
+  padding: 0;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+}
+
+.remove-deposit:hover {
+  background: rgba(255, 0, 0, 0.1);
+  color: rgba(255, 0, 0, 0.8);
+}
+
+.deposit-input-group {
+  display: flex;
+  flex-direction: row;
+  gap: 1rem;
+  align-items: end;
+}
+
+.deposit-stats {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  padding: 1rem;
+}
+
+.stat-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+  font-size: 12px;
+}
+
+.stat-row:last-child {
+  margin-bottom: 0;
+}
+
+.stat-row span:first-child {
+  opacity: 0.6;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 500;
+}
+
+.stat-row span:last-child {
+  font-weight: 600;
+  color: white;
+}
+
+.add-deposit-button {
+  width: 100%;
+  background: transparent;
+  border: 1px dashed rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+  padding: 0.75rem;
+  color: rgba(255, 255, 255, 0.6);
+  font-family: var(--font-source-code), monospace;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.add-deposit-button:hover {
+  border-color: rgba(255, 255, 255, 0.5);
+  color: rgba(255, 255, 255, 0.8);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+/* Strategy Section Styles */
+.strategy-section {
+  margin-bottom: 1.5rem;
+}
+
+.swap-item {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.swap-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.remove-swap {
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 18px;
+  cursor: pointer;
+  padding: 0;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+}
+
+.remove-swap:hover {
+  background: rgba(255, 0, 0, 0.1);
+  color: rgba(255, 0, 0, 0.8);
+}
+
+.swap-label {
+  font-size: 12px;
+  opacity: 0.6;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 500;
+}
+
+.strategy-section .swap-inputs {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.strategy-section .swap-inputs .input-group {
+  flex: 1;
+}
+
+.strategy-section .swap-inputs .token-selector {
+  min-width: 80px;
+}
+
+.strategy-section .swap-arrow {
+  font-size: 16px;
+  opacity: 0.6;
+  font-weight: 600;
+}
+
+.add-swap-button {
+  width: 100%;
+  background: transparent;
+  border: 1px dashed rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+  padding: 0.75rem;
+  color: rgba(255, 255, 255, 0.6);
+  font-family: var(--font-source-code), monospace;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.add-swap-button:hover {
+  border-color: rgba(255, 255, 255, 0.5);
+  color: rgba(255, 255, 255, 0.8);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+/* Chain & DEX Row Styles */
+.chain-dex-row {
+  display: flex;
+  gap: 0.75rem;
+  align-items: end;
+}
+
+.chain-dex-row .token-selector {
+  flex: 1;
+}
+
+.option-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.option-label {
+  font-size: 12px;
+  opacity: 0.6;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.option-tooltip {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  cursor: help;
+  position: relative;
+}
+
+.option-tooltip:hover::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  padding: 0.75rem;
+  font-size: 11px;
+  line-height: 1.4;
+  max-width: 250px;
+  width: 200px;
+  z-index: 1000;
+  backdrop-filter: blur(10px);
+  white-space: normal;
+  margin-bottom: 0.5rem;
+}
+
+.radio-group {
+  display: flex;
+  gap: 1rem;
+}
+
+.radio-option {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.radio-option input[type="radio"] {
+  accent-color: rgba(255, 255, 255, 0.8);
+}
+
+.radio-option span {
+  opacity: 0.8;
+}
+
+.radio-option:hover span {
+  opacity: 1;
+}
+
+/* Swap Preview Styles */
+.swap-preview {
+  margin-top: 1rem;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  padding: 0.75rem;
+}
+
+.preview-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.25rem;
+  font-size: 12px;
+}
+
+.preview-row:last-child {
+  margin-bottom: 0;
+}
+
+.preview-row span:first-child {
+  opacity: 0.6;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 500;
+}
+
+.preview-row span:last-child {
+  font-weight: 600;
+  color: white;
+}
+
+/* Withdraw Section Styles */
+.withdraw-section {
+  margin-bottom: 1.5rem;
+}
+
+.withdraw-item {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.withdraw-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.withdraw-label {
+  font-size: 12px;
+  opacity: 0.6;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 500;
+}
+

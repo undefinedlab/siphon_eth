@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import "./SwapInterface.css";
 import UnifiedBalanceDisplay from "./elements/UnifiedBalanceDisplay";
 import SimpleSwapMode from "./SimpleSwapMode";
+import ProSwapMode from "./ProSwapMode";
 import { isInitialized, initializeWithProvider, getUnifiedBalances } from "../../lib/nexus";
 import { WalletInfo } from "../../lib/walletManager";
 
@@ -88,6 +89,25 @@ export default function SwapInterface() {
         </div>
       )}
 
+      <div className={`siphon-window ${isLoaded ? 'loaded' : ''} ${isProMode ? 'pro-mode' : 'simple-mode'}`}>
+        {!isProMode ? (
+          <SimpleSwapMode
+            isLoaded={isLoaded}
+            unifiedBalances={unifiedBalances}
+            walletConnected={walletConnected}
+            connectedWallet={connectedWallet}
+            nexusInitialized={nexusInitialized}
+            onWalletConnected={handleWalletConnected}
+            onNexusInitialized={handleNexusInitialized}
+            onBalancesUpdated={handleBalancesUpdated}
+          />
+        ) : (
+          <ProSwapMode
+            isLoaded={isLoaded}
+            nexusInitialized={nexusInitialized}
+          />
+        )}
+      </div>
 
     </div>
   );
