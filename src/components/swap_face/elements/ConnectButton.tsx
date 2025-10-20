@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import WalletSelector from './WalletSelector';
-import { walletManager, WalletInfo } from '../../lib/walletManager';
+import { walletManager, WalletInfo } from '../../../lib/walletManager';
 
 export default function ConnectButton({ className, onConnected }: { className?: string; onConnected?: (wallet: WalletInfo) => void }) {
   const [connectedWallet, setConnectedWallet] = useState<WalletInfo | null>(null);
