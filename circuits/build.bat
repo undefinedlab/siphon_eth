@@ -7,15 +7,15 @@ setlocal enabledelayedexpansion
 echo 🔧 Building Siphon ZK Circuits...
 
 REM Check if circom is installed
-circom --version >nul 2>&1
+npx circom2 --version >nul 2>&1
 if %errorlevel% neq 0 (
     echo [ERROR] Circom is not installed. Please install it first:
-    echo npm install -g circom
+    echo npm install -g circom2
     exit /b 1
 )
 
 REM Check if snarkjs is installed
-snarkjs --version >nul 2>&1
+npx snarkjs --version >nul 2>&1
 if %errorlevel% neq 0 (
     echo [ERROR] Snarkjs is not installed. Please install it first:
     echo npm install -g snarkjs
@@ -30,7 +30,7 @@ echo [INFO] Compiling circuits...
 
 REM Compile main withdrawal circuit
 echo [INFO] Compiling withdraw.circom...
-circom ..\circuits\withdraw.circom --r1cs --wasm --sym --c
+npx circom2 ..\withdraw.circom --r1cs --wasm --sym --c
 if %errorlevel% neq 0 (
     echo [ERROR] Failed to compile withdraw circuit
     exit /b 1
@@ -39,7 +39,7 @@ echo [SUCCESS] Withdraw circuit compiled successfully
 
 REM Compile helper circuits
 echo [INFO] Compiling poseidon.circom...
-circom ..\circuits\lib\poseidon.circom --r1cs --wasm --sym --c
+npx circom2 ..\circuits\lib\poseidon.circom --r1cs --wasm --sym --c
 if %errorlevel% neq 0 (
     echo [ERROR] Failed to compile poseidon circuit
     exit /b 1
@@ -47,7 +47,7 @@ if %errorlevel% neq 0 (
 echo [SUCCESS] Poseidon circuit compiled successfully
 
 echo [INFO] Compiling merkleTree.circom...
-circom ..\circuits\lib\merkleTree.circom --r1cs --wasm --sym --c
+npx circom2 ..\circuits\lib\merkleTree.circom --r1cs --wasm --sym --c
 if %errorlevel% neq 0 (
     echo [ERROR] Failed to compile merkle tree circuit
     exit /b 1
@@ -60,13 +60,13 @@ if not exist pot14_final.ptau (
     
     REM Generate Powers of Tau
     echo [INFO] Generating Powers of Tau...
-    snarkjs powersoftau new bn128 14 pot14_0000.ptau -v
+    npx snarkjs powersoftau new bn128 14 pot14_0000.ptau -v
     
     echo [INFO] Contributing to Powers of Tau...
-    snarkjs powersoftau contribute pot14_0000.ptau pot14_0001.ptau --name="Siphon contribution" -v
+    npx snarkjs powersoftau contribute pot14_0000.ptau pot14_0001.ptau --name="Siphon contribution" -v
     
     echo [INFO] Preparing phase 2...
-    snarkjs powersoftau prepare phase2 pot14_0001.ptau pot14_final.ptau -v
+    npx snarkjs powersoftau prepare phase2 pot14_0001.ptau pot14_final.ptau -v
     
     echo [SUCCESS] Powers of Tau generated
 ) else (
@@ -75,16 +75,16 @@ if not exist pot14_final.ptau (
 
 REM Generate proving and verification keys
 echo [INFO] Generating proving and verification keys...
-snarkjs groth16 setup withdraw.r1cs pot14_final.ptau withdraw_0000.zkey
+npx snarkjs groth16 setup withdraw.r1cs pot14_final.ptau withdraw_0000.zkey
 
 echo [INFO] Contributing to trusted setup...
-snarkjs zkey contribute withdraw_0000.zkey withdraw_0001.zkey --name="Siphon trusted setup" -v
+npx snarkjs zkey contribute withdraw_0000.zkey withdraw_0001.zkey --name="Siphon trusted setup" -v
 
 echo [INFO] Exporting verification key...
-snarkjs zkey export verificationkey withdraw_0001.zkey verification_key.json
+npx snarkjs zkey export verificationkey withdraw_0001.zkey verification_key.json
 
 echo [INFO] Exporting Solidity verifier...
-snarkjs zkey export solidityverifier withdraw_0001.zkey verifier.sol
+npx snarkjs zkey export solidityverifier withdraw_0001.zkey verifier.sol
 
 REM Copy verifier to contracts directory
 copy verifier.sol ..\contracts\Verifier.sol
@@ -110,10 +110,10 @@ if "%1"=="--test-proof" (
     node withdraw_js\generate_witness.js withdraw_js\withdraw.wasm input.json witness.wtns
     
     REM Generate proof
-    snarkjs groth16 prove withdraw_0001.zkey witness.wtns proof.json public.json
+    npx snarkjs groth16 prove withdraw_0001.zkey witness.wtns proof.json public.json
     
     REM Verify proof
-    snarkjs groth16 verify verification_key.json public.json proof.json
+    npx snarkjs groth16 verify verification_key.json public.json proof.json
     
     echo [SUCCESS] Test proof generated and verified
 )

@@ -25,6 +25,7 @@ export default function Nav() {
           <p>docs</p>
           <p>about</p>
           
+          <Link href="/testZK" className="nav-link">testZK</Link>
           <button onClick={() => setShowSwapModal(true)} className="nav-link">swap</button>
         </div>
       </nav>
