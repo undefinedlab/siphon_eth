@@ -33,10 +33,11 @@
 .siphon-window.loaded {
   opacity: 1;
   transform: translateY(0);
+  overflow-y: auto
 }
 
-/* Pro mode sizing */
-.siphon-window.pro-mode {
+/* Dashboard mode sizing */
+.siphon-window.dashboard-mode {
   width: 99vw;
   height: 95vh;
   max-width: 1800px;
@@ -44,10 +45,16 @@
 
 /* Simple mode sizing */
 .siphon-window.simple-mode {
-  width: auto;
-  height: auto;
-  min-width: 400px;
-  max-width: 500px;
+  width: 99vw;
+  height: 95vh;
+  max-width: 1800px;
+}
+
+/* Pro mode sizing */
+.siphon-window.pro-mode {
+  width: 70vw;
+  height: 80vh;
+  max-width: 1000px;
 }
 
 .mode-toggle {
@@ -86,7 +93,7 @@
 }
 
 /* Simple Mode Styles */
-.simple-swap {
+.strategy-swap {
   padding: 2rem;
   text-align: center;
   max-width: 400px;
@@ -96,12 +103,12 @@
   transition: opacity 0.4s ease, transform 0.4s ease;
 }
 
-.simple-swap.loaded {
+.strategy-swap.loaded {
   opacity: 1;
   transform: translateY(0);
 }
 
-.simple-swap h3 {
+.strategy-swap h3 {
   margin-bottom: 2rem;
   font-size: 28px;
   font-weight: 700;
@@ -113,8 +120,8 @@
   background-clip: text;
 }
 
-/* Swap Step Styles */
-.swap-step {
+/* Step Styles */
+.connect-wallet {
   margin-bottom: 2rem;
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.08);
@@ -221,11 +228,11 @@
   margin-left: auto;
 }
 
-.simple-swap .swap-inputs {
+.strategy-swap .strategy-inputs {
   margin-bottom: 1.5rem;
 }
 
-.simple-swap .swap-inputs .input-group {
+.strategy-swap .strategy-inputs .input-group {
   margin-bottom: 1rem;
 }
 
@@ -443,10 +450,9 @@
   border-color: rgba(255, 255, 255, 0.3);
 }
 
-.token-input {
-  margin-bottom: 1.5rem;
+/* .token-input {
   flex: 1;
-}
+} */
 
 .deposit-input-group .token-input {
   margin-bottom: 0;
@@ -661,7 +667,7 @@
   font-weight: 500;
 }
 
-.remove-deposit {
+.remove {
   background: transparent;
   border: none;
   color: rgba(255, 255, 255, 0.4);
@@ -677,7 +683,7 @@
   transition: all 0.2s ease;
 }
 
-.remove-deposit:hover {
+.remove:hover {
   background: rgba(255, 0, 0, 0.1);
   color: rgba(255, 0, 0, 0.8);
 }
@@ -739,6 +745,10 @@
   border-color: rgba(255, 255, 255, 0.5);
   color: rgba(255, 255, 255, 0.8);
   background: rgba(255, 255, 255, 0.03);
+}
+
+.swap-inputs .input-group {
+  margin-bottom: 1.5rem;
 }
 
 /* Strategy Section Styles */
@@ -955,27 +965,6 @@
   font-weight: 500;
 }
 
-.remove-withdraw {
-  background: transparent;
-  border: none;
-  color: rgba(255, 255, 255, 0.4);
-  font-size: 18px;
-  cursor: pointer;
-  padding: 0;
-  width: 20px;
-  height: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  transition: all 0.2s ease;
-}
-
-.remove-withdraw:hover {
-  background: rgba(255, 0, 0, 0.1);
-  color: rgba(255, 0, 0, 0.8);
-}
-
 .withdraw-inputs {
   display: flex;
   flex-direction: column;
@@ -991,7 +980,7 @@
 
 .withdraw-input-group .token-input {
   margin-bottom: 0;
-  flex: 1;
+  /* flex: 1; */
 }
 
 .withdraw-input-group .token-input input {

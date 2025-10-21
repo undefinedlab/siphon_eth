@@ -10,7 +10,7 @@ import { WalletInfo } from "../../lib/walletManager";
 
 export default function SwapInterface() {
   const [isLoaded, setIsLoaded] = useState(false);
-  const [isProMode, setIsProMode] = useState(false);
+  const [uiMode, setUiMode] = useState(1);
   const [swapFromToken, setSwapFromToken] = useState("");
   const [swapToToken, setSwapToToken] = useState("USDC");
   const [swapAmount, setSwapAmount] = useState("");
@@ -42,18 +42,21 @@ export default function SwapInterface() {
   const [connectedWallet, setConnectedWallet] = useState<WalletInfo | null>(null);
   const [isTransferring, setIsTransferring] = useState(false);
   const [swaps, setSwaps] = useState([{ 
-    from: "SOL", 
+    fromChain: "Ethereum",
+    from: "ETH",
+    amount: "",
+    toChain: "Ethereum",
     to: "USDC", 
-    amount: "", 
+    amountOut: "",
+    recipient: "",
     liquidity: "internal", 
-    transactionMode: "single",
-    liquidityChain: "SOL"
+    liquidityChain: "ETH"
   }]);
   const [withdrawInstructions, setWithdrawInstructions] = useState([
-    { chain: "SOL", token: "USDC", amount: "", address: "" }
+    { chain: "Ethereum", token: "ETH", amount: "", address: "" }
   ]);
   const [depositInputs, setDepositInputs] = useState([
-    { chain: "SOL", token: "SOL", amount: "" }
+    { chain: "Ethereum", token: "ETH", amount: "" }
   ]);
 
   const handleDeposit = () => {
@@ -175,7 +178,7 @@ export default function SwapInterface() {
   };
 
   const addWithdrawInstruction = () => {
-    setWithdrawInstructions([...withdrawInstructions, { chain: "SOL", token: "USDC", amount: "", address: "" }]);
+    setWithdrawInstructions([...withdrawInstructions, { chain: "ETH", token: "USDC", amount: "", address: "" }]);
   };
 
   const removeWithdrawInstruction = (index: number) => {
@@ -192,7 +195,7 @@ export default function SwapInterface() {
   };
 
   const addDepositInput = () => {
-    setDepositInputs([...depositInputs, { chain: "SOL", token: "SOL", amount: "" }]);
+    setDepositInputs([...depositInputs, { chain: "ETH", token: "ETH", amount: "" }]);
   };
 
   const removeDepositInput = (index: number) => {
@@ -251,29 +254,32 @@ export default function SwapInterface() {
         </div>
       )}
 
-      <div className={`siphon-window ${isLoaded ? 'loaded' : ''} ${isProMode ? 'pro-mode' : 'simple-mode'}`}>
-
+      <div className={`siphon-window ${isLoaded ? 'loaded' : ''} ${uiMode == 1 ? 'dashboard-mode' : uiMode == 2 ? 'simple-mode' : 'pro-mode'}`}>
         <div className="mode-toggle">
           <button 
-            className={`toggle-button ${!isProMode ? 'active' : ''}`}
-            onClick={() => setIsProMode(false)}
+            className={`toggle-button ${uiMode == 1 ? 'active' : ''}`}
+            onClick={() => setUiMode(1)}
+          >
+            Dashboard
+          </button>
+          <button 
+            className={`toggle-button ${uiMode == 2 ? 'active' : ''}`}
+            onClick={() => setUiMode(2)}
           >
             Simple
           </button>
           <button 
-            className={`toggle-button ${isProMode ? 'active' : ''}`}
-            onClick={() => setIsProMode(true)}
+            className={`toggle-button ${uiMode == 3 ? 'active' : ''}`}
+            onClick={() => setUiMode(3)}
           >
             Pro
           </button>
         </div>
 
-        {!isProMode ? (
-          <div className={`simple-swap ${isLoaded ? 'loaded' : ''}`}>
-            <h3>Swap Tokens</h3>
-            
+        {uiMode == 1 ? (
+          <div className={`dashboard ${isLoaded ? 'loaded' : ''}`}>
             {/* Step 1: Connect Wallet */}
-            <div className="swap-step">
+            <div className="connect-wallet">
               <div className="step-header">
                 <span className="step-number">1</span>
                 <span className="step-title">Connect Wallet</span>
@@ -322,8 +328,424 @@ export default function SwapInterface() {
                 />
               </div>
             </div>
+          </div>
+        ) : uiMode == 2 ? (
+          <div className={`three-columns ${isLoaded ? 'loaded' : ''}`}>
+            {/* Column 1: Deposit */}
+            <div className="column">
+              <div className="column-header">
+                <div className="step-number">1</div>
+                <h3 className="step-title" data-tooltip="Deposit your tokens to the Siphon Vault. Your funds are anonymized using zero-knowledge proofs, making your transaction history completely private. Choose your blockchain network, select the token you want to deposit, enter the amount, and review the transaction details before proceeding.">Deposit</h3>
+              </div>
+              
+              <div className="deposit-section">
+                {depositInputs.map((input, index) => (
+                  <div key={index} className="deposit-item">
+                    <div className="deposit-header">
+                      <span className="deposit-label">Deposit {index + 1}</span>
+                      {depositInputs.length > 1 && (
+                        <button 
+                          className="remove"
+                          onClick={() => removeDepositInput(index)}
+                        >
+                          ×
+                        </button>
+                      )}
+                    </div>
+                    
+                    <div className="deposit-input-group">
+                      <div className="token-input">
+                        <label>Chain</label>
+                        <div className="token-selector">
+                          <select
+                            value={input.chain}
+                            onChange={(e) => updateDepositInput(index, 'chain', e.target.value)}
+                          >
+                            <option value="Ethereum">Ethereum</option>
+                            <option value="Optimism">Optimism</option>
+                            <option value="Arbitrum">Arbitrum</option>
+                            <option value="Base">Base</option>
+                          </select>
+                        </div>
+                      </div>
 
-            <div className="swap-inputs">
+                      <div className="token-input">
+                        <label>Token</label>
+                        <div className="token-selector">
+                          <select
+                            value={input.token}
+                            onChange={(e) => updateDepositInput(index, 'token', e.target.value)}
+                          >
+                            <option value="ETH">ETH</option>
+                            <option value="POL">POL</option>
+                            <option value="USDC">USDC</option>
+                            <option value="USDT">USDT</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      <div className="token-input">
+                        <label>Amount</label>
+                        <input
+                          type="number"
+                          placeholder="0.0"
+                          value={input.amount}
+                          onChange={(e) => updateDepositInput(index, 'amount', e.target.value)}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+                
+                <button className="add-deposit-button" onClick={addDepositInput}>
+                  + Add Deposit
+                </button>
+
+                <div className="deposit-stats">
+                  <div className="stat-row">
+                    <span>Total Deposits</span>
+                    <span>{depositInputs.length} transaction{depositInputs.length !== 1 ? 's' : ''}</span>
+                  </div>
+                  <div className="stat-row">
+                    <span>Deposit Fee</span>
+                    <span>0.1%</span>
+                  </div>
+                  <div className="stat-row">
+                    <span>Privacy Level</span>
+                    <span>Maximum</span>
+                  </div>
+                </div>
+              </div>
+              
+              <button 
+                className="action-button" 
+                onClick={handleDeposit}
+                disabled={!nexusInitialized}
+              >
+                {nexusInitialized ? 'Deposit to Vault' : 'Initialize Wallet Connection First'}
+              </button>
+            </div>
+
+            {/* Column 2: Swap */}
+            <div className="column">
+              <div className="column-header">
+                <div className="step-number">2</div>
+                <h3 className="step-title" data-tooltip="Create anonymized cross-chain swaps by transferring funds through Siphon vault. Funds stored in your vault will be swapped with specied token and sent to recipient wallets.">Swap</h3>
+              </div>
+              
+              <div className="swap-section">
+                {swaps.map((swap, index) => (
+                  <div key={index} className="swap-item">
+                    <div className="swap-header">
+                      <span className="swap-label">Swap {index + 1}</span>
+                      {swaps.length > 1 && (
+                        <button 
+                          className="remove"
+                          onClick={() => removeSwap(index)}
+                        >
+                          ×
+                        </button>
+                      )}
+                    </div>
+                    
+                    <div className="swap-inputs">
+                      <div id="from_group" className="input-group">
+                        <div className="token-input">
+                          <label>Amount In</label>
+                          <input
+                            type="number"
+                            placeholder="0.0"
+                            value={swap.amount}
+                            onChange={(e) => updateSwap(index, 'amount', e.target.value)}
+                          />
+                        </div>
+                        <div className="token-input">
+                          <div className="token-selector">
+                            <label>Source Chain</label>
+                            <select
+                              value={swap.fromChain}
+                              onChange={(e) => updateSwap(index, 'fromChain', e.target.value)}
+                            >
+                              <option value="Ethereum">Ethereum</option>
+                              <option value="Optimism">Optimism</option>
+                              <option value="Arbitrum">Arbitrum</option>
+                              <option value="Base">Base</option>
+                            </select>
+                          </div>
+                        </div>
+                        <div className="token-input">
+                          <div className="token-selector">
+                            <label>Token</label>
+                            <select
+                              value={swap.from}
+                              onChange={(e) => updateSwap(index, 'from', e.target.value)}
+                            >
+                              <option value="ETH">ETH</option>
+                              <option value="USDC">USDC</option>
+                              <option value="USDT">USDT</option>
+                            </select>
+                          </div>
+                        </div>
+                      </div>
+                      {/* <div className="swap-arrow">↓</div> */}
+                      <div id="to_group" className="input-group">
+                        <div className="token-input">
+                          <label>Amount Out</label>
+                          <input
+                            type="number"
+                            placeholder="0.0"
+                            readOnly
+                            value={swap.amountOut}
+                            onChange={(e) => updateSwap(index, 'amountOut', e.target.value)}
+                          />
+                        </div>
+                        <div className="token-input">
+                          <div className="token-selector">
+                            <label>Target Chain</label>
+                            <select
+                              value={swap.toChain}
+                              onChange={(e) => updateSwap(index, 'toChain', e.target.value)}
+                            >
+                              <option value="Ethereum">Ethereum</option>
+                              <option value="Optimism">Optimism</option>
+                              <option value="Arbitrum">Arbitrum</option>
+                              <option value="Base">Base</option>
+                            </select>
+                          </div>
+                        </div>
+                        <div className="token-input">
+                          <div className="token-selector">
+                            <label>Token</label>
+                            <select
+                              value={swap.to}
+                              onChange={(e) => updateSwap(index, 'to', e.target.value)}
+                            >
+                              <option value="ETH">ETH</option>
+                              <option value="USDC">USDC</option>
+                              <option value="USDT">USDT</option>
+                            </select>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* <div className="swap-options">
+                      <div className="option-group">
+                        <label className="option-label">
+                          Liquidity Source
+                          <span className="option-tooltip" data-tooltip="Internal: Uses Siphon's internal orderbook for fast, cheap execution. External: Takes liquidity from external pools for better rates.">?</span>
+                        </label>
+                        <div className="radio-group">
+                          <label className="radio-option">
+                            <input
+                              type="radio"
+                              name={`liquidity-${index}`}
+                              value="internal"
+                              checked={swap.liquidity === "internal"}
+                              onChange={(e) => updateSwap(index, 'liquidity', e.target.value)}
+                            />
+                            <span>Internal</span>
+                          </label>
+                          <label className="radio-option">
+                            <input
+                              type="radio"
+                              name={`liquidity-${index}`}
+                              value="external"
+                              checked={swap.liquidity === "external"}
+                              onChange={(e) => updateSwap(index, 'liquidity', e.target.value)}
+                            />
+                            <span>External</span>
+                          </label>
+                        </div>
+                      </div>
+
+                      <div className="option-group">
+                        <label className="option-label">
+                          Transaction Mode
+                          <span className="option-tooltip" data-tooltip="Single: Execute this swap independently. Group: Combine with other swaps for atomic execution.">?</span>
+                        </label>
+                        <div className="radio-group">
+                          <label className="radio-option">
+                            <input
+                              type="radio"
+                              name={`transaction-${index}`}
+                              value="single"
+                              checked={swap.transactionMode === "single"}
+                              onChange={(e) => updateSwap(index, 'transactionMode', e.target.value)}
+                            />
+                            <span>Single</span>
+                          </label>
+                          <label className="radio-option">
+                            <input
+                              type="radio"
+                              name={`transaction-${index}`}
+                              value="group"
+                              checked={swap.transactionMode === "group"}
+                              onChange={(e) => updateSwap(index, 'transactionMode', e.target.value)}
+                            />
+                            <span>Group</span>
+                          </label>
+                        </div>
+                      </div>
+
+                      {swap.liquidity === "external" && (
+                        <div className="option-group">
+                          <label className="option-label">
+                            Liquidity Chain
+                            <span className="option-tooltip" data-tooltip="Select which blockchain network to source external liquidity from.">?</span>
+                          </label>
+                          <div className="token-selector">
+                            <select
+                              value={swap.liquidityChain}
+                              onChange={(e) => updateSwap(index, 'liquidityChain', e.target.value)}
+                            >
+                              <option value="SOL">Solana</option>
+                              <option value="ETH">Ethereum</option>
+                              <option value="BTC">Bitcoin</option>
+                              <option value="POLYGON">Polygon</option>
+                              <option value="ARBITRUM">Arbitrum</option>
+                            </select>
+                          </div>
+                        </div>
+                      )}
+                    </div> */}
+
+                    <div className="wallet-input">
+                        <label>Wallet Address</label>
+                        <input
+                          type="text"
+                          placeholder="Enter wallet address"
+                          value={swap.recipient}
+                          onChange={(e) => updateSwap(index, 'recipient', e.target.value)}
+                        />
+                    </div>
+
+                    <div className="swap-preview">
+                      <div className="preview-row">
+                        <span>Rate</span>
+                        <span>1 {swap.from} = 150 {swap.to}</span>
+                      </div>
+                      <div className="preview-row">
+                        <span>Slippage</span>
+                        <span>{swap.liquidity === "internal" ? "0.1%" : "0.5%"}</span>
+                      </div>
+                      <div className="preview-row">
+                        <span>Fee</span>
+                        <span>{swap.liquidity === "internal" ? "0.05%" : "0.3%"}</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+                
+                <button className="add-swap-button" onClick={addSwap}>
+                  + Add Swap
+                </button>
+              </div>
+              
+              <button 
+                className="action-button" 
+                onClick={handleSwap}
+                disabled={!nexusInitialized}
+              >
+                {nexusInitialized ? 'Execute Swap' : 'Initialize Wallet Connection First'}
+              </button>
+            </div>
+
+            {/* Column 3: Withdraw */}
+            <div className="column">
+              <div className="column-header">
+                <div className="step-number">3</div>
+                <h3 className="step-title" data-tooltip="Withdraw your tokens to any wallet address. The withdrawal process uses advanced privacy techniques to break the transaction trail, ensuring your funds cannot be traced back to their original source. Configure multiple withdrawal outputs to different wallet addresses. Specify the exact amount and token for each output, enabling complex distribution strategies.">Withdraw</h3>
+              </div>
+              
+              <div className="withdraw-section">
+                {withdrawInstructions.map((instruction, index) => (
+                  <div key={index} className="withdraw-item">
+                    <div className="withdraw-header">
+                      <span className="withdraw-label">Withdrawal {index + 1}</span>
+                      {withdrawInstructions.length > 1 && (
+                        <button 
+                          className="remove"
+                          onClick={() => removeWithdrawInstruction(index)}
+                        >
+                          ×
+                        </button>
+                      )}
+                    </div>
+                    
+                    <div className="withdraw-inputs">
+                      <div className="withdraw-input-group">
+                        <div className="token-input">
+                          <label>Chain</label>
+                          <div className="token-selector">
+                            <select
+                              value={instruction.chain}
+                              onChange={(e) => updateWithdrawInstruction(index, 'chain', e.target.value)}
+                            >
+                              <option value="Ethereum">Ethereum</option>
+                              <option value="Optimism">Optimism</option>
+                              <option value="Arbitrum">Arbitrum</option>
+                              <option value="Base">Base</option>
+                            </select>
+                          </div>
+                        </div>
+                        <div className="token-input">
+                          <label>Token</label>
+                          <div className="token-selector">
+                            <select
+                              value={instruction.token}
+                              onChange={(e) => updateWithdrawInstruction(index, 'token', e.target.value)}
+                            >
+                              <option value="ETH">ETH</option>
+                              <option value="USDC">USDC</option>
+                              <option value="USDT">USDT</option>
+                            </select>
+                          </div>
+                        </div>
+                        <div className="token-input">
+                          <label>Amount</label>
+                          <input
+                            type="number"
+                            placeholder="0.0"
+                            value={instruction.amount}
+                            onChange={(e) => updateWithdrawInstruction(index, 'amount', e.target.value)}
+                          />
+                        </div>
+                      </div>
+                      
+                      <div className="wallet-input">
+                        <label>Wallet Address</label>
+                        <input
+                          type="text"
+                          placeholder="Enter wallet address"
+                          value={instruction.address}
+                          onChange={(e) => updateWithdrawInstruction(index, 'address', e.target.value)}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+                
+                <button className="add-withdraw-button" onClick={addWithdrawInstruction}>
+                  + Add Withdraw
+                </button>
+              </div>
+              
+              <button 
+                className="action-button" 
+                onClick={handleWithdraw}
+                disabled={!nexusInitialized}
+              >
+                {nexusInitialized ? 'Execute Withdrawals' : 'Initialize Wallet Connection First'}
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className={`strategy-swap ${isLoaded ? 'loaded' : ''}`}>
+            <h3 data-tooltip="The trading data is encrypted by FHE mechanism and anonymity is kept by Zero-Knowledge proof mechanism to provide a fully encrypted & secure trading strategy.">
+              Create a Swap Strategy
+            </h3>
+            <div className="strategy-inputs">
               <div className="input-group">
                 <input
                   type="number"
@@ -354,11 +776,9 @@ export default function SwapInterface() {
                     value={swapToToken}
                     onChange={(e) => setSwapToToken(e.target.value)}
                   >
-                    <option value="SOL">SOL</option>
-                    <option value="USDC">USDC</option>
                     <option value="ETH">ETH</option>
-                    <option value="ZCASH">ZCASH</option>
-                    <option value="XMR">XMR</option>
+                    <option value="USDC">USDC</option>
+                    <option value="USDT">USDC</option>
                   </select>
                 </div>
               </div>
@@ -402,7 +822,7 @@ export default function SwapInterface() {
 
             <button 
               className="action-button" 
-              onClick={handleSwap}
+              onClick={handleStrategy}
               disabled={!nexusInitialized || isTransferring}
             >
               {isTransferring ? (
@@ -415,359 +835,6 @@ export default function SwapInterface() {
               )}
             </button>
           </div>
-        ) : (
-          <div className={`three-columns ${isLoaded ? 'loaded' : ''}`}>
-          {/* Column 1: Deposit */}
-          <div className="column">
-            <div className="column-header">
-              <div className="step-number">1</div>
-              <h3 className="step-title" data-tooltip="Deposit your tokens to the Siphon Vault. Your funds are encrypted and anonymized using zero-knowledge proofs, making your transaction history completely private. Choose your blockchain network, select the token you want to deposit, enter the amount, and review the transaction details before proceeding.">Deposit</h3>
-            </div>
-            
-            <div className="deposit-section">
-              {depositInputs.map((input, index) => (
-                <div key={index} className="deposit-item">
-                  <div className="deposit-header">
-                    <span className="deposit-label">Deposit {index + 1}</span>
-                    {depositInputs.length > 1 && (
-                      <button 
-                        className="remove-deposit"
-                        onClick={() => removeDepositInput(index)}
-                      >
-                        ×
-                      </button>
-                    )}
-                  </div>
-                  
-                  <div className="deposit-input-group">
-                    <div className="token-input">
-                      <label>Chain</label>
-                      <div className="token-selector">
-                        <select
-                          value={input.chain}
-                          onChange={(e) => updateDepositInput(index, 'chain', e.target.value)}
-                        >
-                          <option value="SOL">Solana</option>
-                          <option value="ETH">Ethereum</option>
-                          <option value="BTC">Bitcoin</option>
-                        </select>
-                      </div>
-                    </div>
-
-                    <div className="token-input">
-                      <label>Token</label>
-                      <div className="token-selector">
-                        <select
-                          value={input.token}
-                          onChange={(e) => updateDepositInput(index, 'token', e.target.value)}
-                        >
-                          <option value="SOL">SOL</option>
-                          <option value="USDC">USDC</option>
-                          <option value="ETH">ETH</option>
-                          <option value="ZCASH">ZCASH</option>
-                          <option value="XMR">XMR</option>
-                        </select>
-                      </div>
-                    </div>
-
-                    <div className="token-input">
-                      <label>Amount</label>
-                      <input
-                        type="number"
-                        placeholder="0.0"
-                        value={input.amount}
-                        onChange={(e) => updateDepositInput(index, 'amount', e.target.value)}
-                      />
-                    </div>
-                  </div>
-                </div>
-              ))}
-              
-              <button className="add-deposit-button" onClick={addDepositInput}>
-                + Add Deposit
-              </button>
-
-              <div className="deposit-stats">
-                <div className="stat-row">
-                  <span>Total Deposits</span>
-                  <span>{depositInputs.length} transaction{depositInputs.length !== 1 ? 's' : ''}</span>
-                </div>
-                <div className="stat-row">
-                  <span>Deposit Fee</span>
-                  <span>0.1%</span>
-                </div>
-                <div className="stat-row">
-                  <span>Privacy Level</span>
-                  <span>Maximum</span>
-                </div>
-              </div>
-            </div>
-            
-            <button 
-              className="action-button" 
-              onClick={handleDeposit}
-              disabled={!nexusInitialized}
-            >
-              {nexusInitialized ? 'Deposit to Vault' : 'Initialize Nexus SDK First'}
-            </button>
-          </div>
-
-          {/* Column 2: Strategy */}
-          <div className="column">
-            <div className="column-header">
-              <div className="step-number">2</div>
-              <h3 className="step-title" data-tooltip="Create complex trading strategies with multiple swaps. Each swap is executed privately within the vault using homomorphic encryption, ensuring your trading patterns remain completely anonymous. Build sophisticated trading strategies by adding multiple swaps. Each swap can convert different amounts of tokens, allowing for complex multi-step trading operations.">Strategy</h3>
-            </div>
-            
-            <div className="strategy-section">
-              {swaps.map((swap, index) => (
-                <div key={index} className="swap-item">
-                  <div className="swap-header">
-                    <span className="swap-label">Swap {index + 1}</span>
-                  </div>
-                  
-                  <div className="swap-inputs">
-                    <div className="input-group">
-                      <input
-                        type="number"
-                        placeholder="0.0"
-                        value={swap.amount}
-                        onChange={(e) => updateSwap(index, 'amount', e.target.value)}
-                      />
-                      <div className="token-selector">
-                        <select
-                          value={swap.from}
-                          onChange={(e) => updateSwap(index, 'from', e.target.value)}
-                        >
-                          <option value="SOL">SOL</option>
-                          <option value="USDC">USDC</option>
-                          <option value="ETH">ETH</option>
-                          <option value="ZCASH">ZCASH</option>
-                          <option value="XMR">XMR</option>
-                        </select>
-                      </div>
-                    </div>
-
-                    <div className="swap-arrow">→</div>
-
-                    <div className="token-selector">
-                      <select
-                        value={swap.to}
-                        onChange={(e) => updateSwap(index, 'to', e.target.value)}
-                      >
-                        <option value="SOL">SOL</option>
-                        <option value="USDC">USDC</option>
-                        <option value="ETH">ETH</option>
-                        <option value="ZCASH">ZCASH</option>
-                        <option value="XMR">XMR</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  <div className="swap-options">
-                    <div className="option-group">
-                      <label className="option-label">
-                        Liquidity Source
-                        <span className="option-tooltip" data-tooltip="Internal: Uses Siphon's internal orderbook for fast, cheap execution. External: Takes liquidity from external pools for better rates.">?</span>
-                      </label>
-                      <div className="radio-group">
-                        <label className="radio-option">
-                          <input
-                            type="radio"
-                            name={`liquidity-${index}`}
-                            value="internal"
-                            checked={swap.liquidity === "internal"}
-                            onChange={(e) => updateSwap(index, 'liquidity', e.target.value)}
-                          />
-                          <span>Internal</span>
-                        </label>
-                        <label className="radio-option">
-                          <input
-                            type="radio"
-                            name={`liquidity-${index}`}
-                            value="external"
-                            checked={swap.liquidity === "external"}
-                            onChange={(e) => updateSwap(index, 'liquidity', e.target.value)}
-                          />
-                          <span>External</span>
-                        </label>
-                      </div>
-                    </div>
-
-                    <div className="option-group">
-                      <label className="option-label">
-                        Transaction Mode
-                        <span className="option-tooltip" data-tooltip="Single: Execute this swap independently. Group: Combine with other swaps for atomic execution.">?</span>
-                      </label>
-                      <div className="radio-group">
-                        <label className="radio-option">
-                          <input
-                            type="radio"
-                            name={`transaction-${index}`}
-                            value="single"
-                            checked={swap.transactionMode === "single"}
-                            onChange={(e) => updateSwap(index, 'transactionMode', e.target.value)}
-                          />
-                          <span>Single</span>
-                        </label>
-                        <label className="radio-option">
-                          <input
-                            type="radio"
-                            name={`transaction-${index}`}
-                            value="group"
-                            checked={swap.transactionMode === "group"}
-                            onChange={(e) => updateSwap(index, 'transactionMode', e.target.value)}
-                          />
-                          <span>Group</span>
-                        </label>
-                      </div>
-                    </div>
-
-                    {swap.liquidity === "external" && (
-                      <div className="option-group">
-                        <label className="option-label">
-                          Liquidity Chain
-                          <span className="option-tooltip" data-tooltip="Select which blockchain network to source external liquidity from.">?</span>
-                        </label>
-                        <div className="token-selector">
-                          <select
-                            value={swap.liquidityChain}
-                            onChange={(e) => updateSwap(index, 'liquidityChain', e.target.value)}
-                          >
-                            <option value="SOL">Solana</option>
-                            <option value="ETH">Ethereum</option>
-                            <option value="BTC">Bitcoin</option>
-                            <option value="POLYGON">Polygon</option>
-                            <option value="ARBITRUM">Arbitrum</option>
-                          </select>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="swap-preview">
-                    <div className="preview-row">
-                      <span>Rate</span>
-                      <span>1 {swap.from} = 150 {swap.to}</span>
-                    </div>
-                    <div className="preview-row">
-                      <span>Slippage</span>
-                      <span>{swap.liquidity === "internal" ? "0.1%" : "0.5%"}</span>
-                    </div>
-                    <div className="preview-row">
-                      <span>Fee</span>
-                      <span>{swap.liquidity === "internal" ? "0.05%" : "0.3%"}</span>
-                    </div>
-                  </div>
-                </div>
-              ))}
-              
-              <button className="add-swap-button" onClick={addSwap}>
-                + Add Swap
-              </button>
-            </div>
-            
-            <button 
-              className="action-button" 
-              onClick={handleSwap}
-              disabled={!nexusInitialized}
-            >
-              {nexusInitialized ? 'Execute Strategy' : 'Initialize Nexus SDK First'}
-            </button>
-          </div>
-
-          {/* Column 3: Withdraw */}
-          <div className="column">
-            <div className="column-header">
-              <div className="step-number">3</div>
-              <h3 className="step-title" data-tooltip="Withdraw your tokens to any wallet address. The withdrawal process uses advanced privacy techniques to break the transaction trail, ensuring your funds cannot be traced back to their original source. Configure multiple withdrawal outputs to different wallet addresses. Specify the exact amount and token for each output, enabling complex distribution strategies.">Withdraw</h3>
-            </div>
-            
-            <div className="withdraw-section">
-              {withdrawInstructions.map((instruction, index) => (
-                <div key={index} className="withdraw-item">
-                  <div className="withdraw-header">
-                    <span className="withdraw-label">Output {index + 1}</span>
-                    {withdrawInstructions.length > 1 && (
-                      <button 
-                        className="remove-withdraw"
-                        onClick={() => removeWithdrawInstruction(index)}
-                      >
-                        ×
-                      </button>
-                    )}
-                  </div>
-                  
-                  <div className="withdraw-inputs">
-                    <div className="withdraw-input-group">
-                      <div className="token-input">
-                        <label>Chain</label>
-                        <div className="token-selector">
-                          <select
-                            value={instruction.chain}
-                            onChange={(e) => updateWithdrawInstruction(index, 'chain', e.target.value)}
-                          >
-                            <option value="SOL">Solana</option>
-                            <option value="ETH">Ethereum</option>
-                            <option value="BTC">Bitcoin</option>
-                          </select>
-                        </div>
-                      </div>
-
-                      <div className="token-input">
-                        <label>Token</label>
-                        <div className="token-selector">
-                          <select
-                            value={instruction.token}
-                            onChange={(e) => updateWithdrawInstruction(index, 'token', e.target.value)}
-                          >
-                            <option value="SOL">SOL</option>
-                            <option value="USDC">USDC</option>
-                            <option value="ETH">ETH</option>
-                            <option value="ZCASH">ZCASH</option>
-                            <option value="XMR">XMR</option>
-                          </select>
-                        </div>
-                      </div>
-
-                      <div className="token-input">
-                        <label>Amount</label>
-                        <input
-                          type="number"
-                          placeholder="0.0"
-                          value={instruction.amount}
-                          onChange={(e) => updateWithdrawInstruction(index, 'amount', e.target.value)}
-                        />
-                      </div>
-                    </div>
-                    
-                    <div className="wallet-input">
-                      <label>Wallet Address</label>
-                      <input
-                        type="text"
-                        placeholder="Enter wallet address"
-                        value={instruction.address}
-                        onChange={(e) => updateWithdrawInstruction(index, 'address', e.target.value)}
-                      />
-                    </div>
-                  </div>
-                </div>
-              ))}
-              
-              <button className="add-withdraw-button" onClick={addWithdrawInstruction}>
-                + Add Output
-              </button>
-            </div>
-            
-            <button 
-              className="action-button" 
-              onClick={handleWithdraw}
-              disabled={!nexusInitialized}
-            >
-              {nexusInitialized ? 'Execute Withdrawals' : 'Initialize Nexus SDK First'}
-            </button>
-          </div>
-        </div>
         )}
       </div>
 
