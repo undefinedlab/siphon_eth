@@ -5,6 +5,7 @@ import "./SimpleSwapMode.css";
 import ConnectButton from "./elements/ConnectButton";
 import UnifiedBalanceDisplay from "./elements/UnifiedBalanceDisplay";
 import TokenSelector from "./elements/TokenSelector";
+import ToTokenSelector from "./elements/ToTokenSelector";
 import { isInitialized, transferTokens, initializeWithProvider, getUnifiedBalances } from "../../lib/nexus";
 import { WalletInfo } from "../../lib/walletManager";
 
@@ -240,16 +241,11 @@ export default function SimpleSwapMode({
             readOnly
           />
           <div className="token-selector">
-            <select
-              value={swapToToken}
-              onChange={(e) => setSwapToToken(e.target.value)}
-            >
-              <option value="SOL">SOL</option>
-              <option value="USDC">USDC</option>
-              <option value="ETH">ETH</option>
-              <option value="ZCASH">ZCASH</option>
-              <option value="XMR">XMR</option>
-            </select>
+            <ToTokenSelector
+              selectedToken={swapToToken}
+              onTokenSelect={setSwapToToken}
+              className="token-select"
+            />
           </div>
         </div>
 

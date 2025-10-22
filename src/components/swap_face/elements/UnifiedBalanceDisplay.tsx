@@ -126,7 +126,7 @@ export default function UnifiedBalanceDisplay({ balances }: { balances: UnifiedB
                 <div className="balance-info">
                   <span className="total-balance">{totalBalance.toFixed(6)}</span>
                   {totalFiat > 0 && (
-                    <span className="fiat-balance">${totalFiat.toFixed(2)}</span>
+                    <span className="fiat-balance"> ${totalFiat.toFixed(2)}</span>
                   )}
                 </div>
               </div>

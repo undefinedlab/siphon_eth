@@ -7,7 +7,6 @@ interface WalletOption {
   name: string;
   icon: string;
   chain: string;
-  description: string;
 }
 
 const walletOptions: WalletOption[] = [
@@ -15,29 +14,20 @@ const walletOptions: WalletOption[] = [
     id: 'metamask',
     name: 'MetaMask',
     icon: 'MM',
-    chain: 'EVM',
-    description: 'Connect to Ethereum, Polygon, Arbitrum, and other EVM chains'
+    chain: 'EVM'
   },
-  {
-    id: 'solana',
-    name: 'Solflare',
-    icon: 'SOL',
-    chain: 'Solana',
-    description: 'Connect to Solana blockchain'
-  },
+  
   {
     id: 'bitcoin',
     name: 'Xverse',
     icon: 'BTC',
-    chain: 'Bitcoin',
-    description: 'Connect to Bitcoin network'
+    chain: 'Bitcoin'
   },
   {
     id: 'xmr',
     name: 'Monero',
     icon: 'XMR',
-    chain: 'Monero',
-    description: 'Connect to Monero network'
+    chain: 'Monero'
   }
 ];
 
@@ -77,17 +67,22 @@ export default function WalletSelector({ onWalletSelect, className }: WalletSele
               <button
                 key={wallet.id}
                 className="wallet-option"
+                data-wallet-id={wallet.id}
                 onClick={() => handleWalletClick(wallet.id)}
               >
                 <div className="wallet-option-content">
                   <div className="wallet-option-header">
                     <span className="wallet-option-icon">{wallet.icon}</span>
                     <div className="wallet-option-info">
-                      <span className="wallet-option-name">{wallet.name}</span>
+                      <div className="wallet-option-title-row">
+                        <span className="wallet-option-name">{wallet.name}</span>
+                        {wallet.id === 'metamask' && (
+                          <span className="recommended-badge">Recommended</span>
+                        )}
+                      </div>
                       <span className="wallet-option-chain">{wallet.chain}</span>
                     </div>
                   </div>
-                  <p className="wallet-option-description">{wallet.description}</p>
                 </div>
               </button>
             ))}
