@@ -97,9 +97,9 @@ export default function SoftHorizonCanvas() {
     ctx.font = `bold ${mainFontSize}px Source Code Pro`;
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    ctx.textRendering = "geometricPrecision" as any;
-    (ctx as any).imageSmoothingEnabled = true;
-    (ctx as any).imageSmoothingQuality = "high";
+    ctx.textRendering = "geometricPrecision" as CanvasTextRendering;
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = "high";
     
     // Calculate text width to position logo
     const textMetrics = ctx.measureText("siphon");

@@ -6,7 +6,6 @@ import { walletManager, WalletInfo } from '../../../lib/walletManager';
 
 export default function ConnectButton({ className, onConnected }: { className?: string; onConnected?: (wallet: WalletInfo) => void }) {
   const [connectedWallet, setConnectedWallet] = useState<WalletInfo | null>(null);
-  const [isConnecting, setIsConnecting] = useState(false);
 
   useEffect(() => {
     // Check for existing connections on mount
@@ -17,7 +16,6 @@ export default function ConnectButton({ className, onConnected }: { className?: 
   }, []);
 
   const handleWalletSelect = async (walletId: string) => {
-    setIsConnecting(true);
     try {
       const result = await walletManager.connectWallet(walletId);
       if (result.success && result.wallet) {
@@ -28,18 +26,9 @@ export default function ConnectButton({ className, onConnected }: { className?: 
       }
     } catch (error: unknown) {
       alert(`Connection error: ${error instanceof Error ? error.message : 'Unknown error'}`);
-    } finally {
-      setIsConnecting(false);
     }
   };
 
-  const handleDisconnect = () => {
-    if (connectedWallet) {
-      walletManager.disconnectWallet(connectedWallet.id);
-      setConnectedWallet(null);
-      alert(`${connectedWallet.name} disconnected`);
-    }
-  };
 
   const formatAddress = (address: string) => {
     if (address.length <= 10) return address;

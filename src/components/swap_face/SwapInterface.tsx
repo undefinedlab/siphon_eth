@@ -5,7 +5,7 @@ import "./SwapInterface.css";
 import UnifiedBalanceDisplay from "./elements/UnifiedBalanceDisplay";
 import SimpleSwapMode from "./SimpleSwapMode";
 import ProSwapMode from "./ProSwapMode";
-import { isInitialized, initializeWithProvider, getUnifiedBalances } from "../../lib/nexus";
+import { isInitialized } from "../../lib/nexus";
 import { WalletInfo } from "../../lib/walletManager";
 
 export default function SwapInterface() {
@@ -48,7 +48,25 @@ export default function SwapInterface() {
     setNexusInitialized(initialized);
   };
 
-  const handleBalancesUpdated = (balances: any) => {
+  const handleBalancesUpdated = (balances: Array<{
+    symbol: string;
+    balance: string;
+    balanceInFiat?: number;
+    breakdown?: Array<{
+      balance: string;
+      balanceInFiat?: number;
+      chain: {
+        id: number;
+        logo: string;
+        name: string;
+      };
+      contractAddress?: `0x${string}`;
+      decimals?: number;
+      isNative?: boolean;
+    }>;
+    decimals?: number;
+    icon?: string;
+  }>) => {
     setUnifiedBalances(balances);
     // Persist balances
     localStorage.setItem('siphon-unified-balances', JSON.stringify(balances));

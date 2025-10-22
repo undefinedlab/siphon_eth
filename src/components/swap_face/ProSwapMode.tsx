@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import "./ProSwapMode.css";
-import { WalletInfo } from "../../lib/walletManager";
 
 interface ProSwapModeProps {
   isLoaded: boolean;
@@ -259,7 +258,7 @@ export default function ProSwapMode({
                  
                  if (totalUSD === 0) return 'No amount entered';
                  
-                 const entries = Object.entries(totals).filter(([_, amount]) => amount > 0);
+                 const entries = Object.entries(totals).filter(([, amount]) => amount > 0);
                  if (entries.length === 1) {
                    const [token, amount] = entries[0];
                    return `${token} ${amount.toFixed(4)} ($${totalUSD.toFixed(2)})`;
@@ -511,7 +510,7 @@ export default function ProSwapMode({
                 
                 if (totalUSD === 0) return 'No amount entered';
                 
-                const entries = Object.entries(totals).filter(([_, amount]) => amount > 0);
+                const entries = Object.entries(totals).filter(([, amount]) => amount > 0);
                 if (entries.length === 1) {
                   const [token, amount] = entries[0];
                   return `${token} ${amount.toFixed(4)} ($${totalUSD.toFixed(2)})`;
@@ -643,7 +642,7 @@ export default function ProSwapMode({
                 
                 if (totalUSD === 0) return 'No amount entered';
                 
-                const entries = Object.entries(totals).filter(([_, amount]) => amount > 0);
+                const entries = Object.entries(totals).filter(([, amount]) => amount > 0);
                 if (entries.length === 1) {
                   const [token, amount] = entries[0];
                   return `${token} ${amount.toFixed(4)} ($${totalUSD.toFixed(2)})`;
