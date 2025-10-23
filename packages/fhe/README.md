@@ -1,8 +1,8 @@
 # Syphon FHE AutoTrader Server
 
-This is the off-chain, Rust-based FHE (Fully Homomorphic Encryption) server for the Syphon Money protocol. It acts as a specialized co-processor responsible for privately evaluating user-defined trading strategies against live market data.
+This is the off-chain, Rust-based FHE (Fully Homomorphic Encryption) server for the Siphon Money protocol. It acts as a specialized co-processor responsible for privately evaluating user-defined trading strategies against live market data.
 
-This server is designed to work in tandem with a primary orchestrator backend (e.g., the Python server), which handles user requests, manages the order book, Fetches Price and triggers on-chain execution.
+This server is designed to work in tandem with a primary trade executor backend (e.g., the Python server), which handles user requests, manages the order book, Fetches Price and triggers on-chain execution.
 
 ## Features
 
