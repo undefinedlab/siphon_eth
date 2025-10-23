@@ -52,6 +52,7 @@
 .siphon-window.loaded {
   opacity: 1;
   transform: translateY(0);
+  overflow-y: auto
 }
 
 /* Pro mode sizing */
