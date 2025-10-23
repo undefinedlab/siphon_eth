@@ -3,9 +3,9 @@
 import { useState, useEffect } from "react";
 import "./SimpleSwapMode.css";
 import ConnectButton from "./elements/ConnectButton";
-import UnifiedBalanceDisplay from "./elements/UnifiedBalanceDisplay";
 import TokenSelector from "./elements/TokenSelector";
-import { isInitialized, transferTokens, initializeWithProvider, getUnifiedBalances } from "../../lib/nexus";
+import ToTokenSelector from "./elements/ToTokenSelector";
+import { transferTokens, getUnifiedBalances, initializeWithProvider } from "../../lib/nexus";
 import { WalletInfo } from "../../lib/walletManager";
 
 interface SimpleSwapModeProps {
@@ -34,14 +34,30 @@ interface SimpleSwapModeProps {
   nexusInitialized: boolean;
   onWalletConnected: (wallet: WalletInfo) => void;
   onNexusInitialized: (initialized: boolean) => void;
-  onBalancesUpdated: (balances: any) => void;
+  onBalancesUpdated: (balances: Array<{
+    symbol: string;
+    balance: string;
+    balanceInFiat?: number;
+    breakdown?: Array<{
+      balance: string;
+      balanceInFiat?: number;
+      chain: {
+        id: number;
+        logo: string;
+        name: string;
+      };
+      contractAddress?: `0x${string}`;
+      decimals?: number;
+      isNative?: boolean;
+    }>;
+    decimals?: number;
+    icon?: string;
+  }>) => void;
 }
 
 export default function SimpleSwapMode({
   isLoaded,
   unifiedBalances,
-  walletConnected,
-  connectedWallet,
   nexusInitialized,
   onWalletConnected,
   onNexusInitialized,
@@ -240,16 +256,11 @@ export default function SimpleSwapMode({
             readOnly
           />
           <div className="token-selector">
-            <select
-              value={swapToToken}
-              onChange={(e) => setSwapToToken(e.target.value)}
-            >
-              <option value="SOL">SOL</option>
-              <option value="USDC">USDC</option>
-              <option value="ETH">ETH</option>
-              <option value="ZCASH">ZCASH</option>
-              <option value="XMR">XMR</option>
-            </select>
+            <ToTokenSelector
+              selectedToken={swapToToken}
+              onTokenSelect={setSwapToToken}
+              className="token-select"
+            />
           </div>
         </div>
 

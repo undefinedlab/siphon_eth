@@ -5,7 +5,7 @@ import "./SwapInterface.css";
 import UnifiedBalanceDisplay from "./elements/UnifiedBalanceDisplay";
 import SimpleSwapMode from "./SimpleSwapMode";
 import ProSwapMode from "./ProSwapMode";
-import { isInitialized, initializeWithProvider, getUnifiedBalances } from "../../lib/nexus";
+import { isInitialized } from "../../lib/nexus";
 import { WalletInfo } from "../../lib/walletManager";
 
 export default function SwapInterface() {
@@ -40,14 +40,36 @@ export default function SwapInterface() {
   const handleWalletConnected = (wallet: WalletInfo) => {
     setWalletConnected(true);
     setConnectedWallet(wallet);
+    // Persist wallet connection
+    localStorage.setItem('siphon-connected-wallet', JSON.stringify(wallet));
   };
 
   const handleNexusInitialized = (initialized: boolean) => {
     setNexusInitialized(initialized);
   };
 
-  const handleBalancesUpdated = (balances: any) => {
+  const handleBalancesUpdated = (balances: Array<{
+    symbol: string;
+    balance: string;
+    balanceInFiat?: number;
+    breakdown?: Array<{
+      balance: string;
+      balanceInFiat?: number;
+      chain: {
+        id: number;
+        logo: string;
+        name: string;
+      };
+      contractAddress?: `0x${string}`;
+      decimals?: number;
+      isNative?: boolean;
+    }>;
+    decimals?: number;
+    icon?: string;
+  }>) => {
     setUnifiedBalances(balances);
+    // Persist balances
+    localStorage.setItem('siphon-unified-balances', JSON.stringify(balances));
   };
 
 
@@ -59,6 +81,31 @@ export default function SwapInterface() {
 
     // Check if Nexus SDK is already initialized
     setNexusInitialized(isInitialized());
+
+    // Check for persisted wallet connection and balances
+    const persistedWallet = localStorage.getItem('siphon-connected-wallet');
+    const persistedBalances = localStorage.getItem('siphon-unified-balances');
+    
+    if (persistedWallet) {
+      try {
+        const wallet = JSON.parse(persistedWallet);
+        setConnectedWallet(wallet);
+        setWalletConnected(true);
+      } catch (error) {
+        console.error('Failed to parse persisted wallet:', error);
+        localStorage.removeItem('siphon-connected-wallet');
+      }
+    }
+    
+    if (persistedBalances) {
+      try {
+        const balances = JSON.parse(persistedBalances);
+        setUnifiedBalances(balances);
+      } catch (error) {
+        console.error('Failed to parse persisted balances:', error);
+        localStorage.removeItem('siphon-unified-balances');
+      }
+    }
 
     return () => clearTimeout(timer);
   }, []);

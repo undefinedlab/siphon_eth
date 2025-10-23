@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import {
   simulationVertexShader,
@@ -11,6 +11,7 @@ import {
 
 export default function SoftHorizonCanvas() {
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
     const scene = new THREE.Scene();
@@ -96,9 +97,9 @@ export default function SoftHorizonCanvas() {
     ctx.font = `bold ${mainFontSize}px Source Code Pro`;
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    ctx.textRendering = "geometricPrecision" as any;
-    (ctx as any).imageSmoothingEnabled = true;
-    (ctx as any).imageSmoothingQuality = "high";
+    ctx.textRendering = "geometricPrecision" as CanvasTextRendering;
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = "high";
     
     // Calculate text width to position logo
     const textMetrics = ctx.measureText("siphon");
@@ -121,7 +122,7 @@ export default function SoftHorizonCanvas() {
     
     // Subtitle
     ctx.font = `${subtitleFontSize}px Source Code Pro`;
-    ctx.fillStyle = "rgba(255, 255, 255, 0.6)";
+    ctx.fillStyle = "#ffffff";
     ctx.fillText("trade without a trace.", width / 2 + 120, height / 2 + mainFontSize * 0.4);
 
     const textTexture = new THREE.CanvasTexture(canvas2d);
@@ -175,7 +176,7 @@ export default function SoftHorizonCanvas() {
       
       // Subtitle
       ctx.font = `${newSubtitleFontSize}px Source Code Pro`;
-      ctx.fillStyle = "rgba(255, 255, 255, 0.6)";
+      ctx.fillStyle = "#ffffff";
       ctx.fillText("Trade anywhere, visible nowhere.", width / 2 + 40, height / 2 + newMainFontSize * 0.4);
       
       textTexture.needsUpdate = true;
@@ -217,6 +218,9 @@ export default function SoftHorizonCanvas() {
     };
     animate();
 
+    // Trigger loaded state after a short delay for smooth animation
+    setTimeout(() => setIsLoaded(true), 100);
+
     return () => {
       cancelAnimationFrame(rafId);
       window.removeEventListener("resize", onResize);
@@ -235,7 +239,15 @@ export default function SoftHorizonCanvas() {
     };
   }, []);
 
-  return <div ref={containerRef} />;
+  return (
+    <div 
+      ref={containerRef} 
+      style={{
+        opacity: isLoaded ? 1 : 0,
+        transition: 'opacity 1.5s ease-in-out'
+      }}
+    />
+  );
 }
 
 
