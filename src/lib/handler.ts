@@ -8,7 +8,7 @@ const NATIVE_TOKEN = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE";
 
 export async function deposit(_chain: string, _token: string, _amount: string) {
     // Will need to replace this with actual precommitment hash
-    const precommitment = 0;
+    const precommitment = Math.floor(Math.random() * 1000000000000000).toString();
 
     // Retrieve chain & token data
     const chain = sdk.utils.getSupportedChains(0).find(c => c.name.toUpperCase() === _chain.toUpperCase());
@@ -157,5 +157,83 @@ export async function deposit(_chain: string, _token: string, _amount: string) {
 }
 
 export async function withdraw(_chain: string, _token: string, _amount: string, _recipient: string) {
-    return true;
+    // Will need to replace these with actual data
+    const newCommitment = Math.floor(Math.random() * 1000000000000000).toString();
+    const nullifier = Math.floor(Math.random() * 1000000000000000).toString();
+    const proof = Math.floor(Math.random() * 1000000000000000).toString();
+
+    // Search chain & token
+    const chain = sdk.utils.getSupportedChains(0).find(c => c.name.toUpperCase() === _chain.toUpperCase());
+    if (chain == undefined) {
+        return { success: false, error: `Chain not supported: ${_chain.toUpperCase()}` };
+    }
+    let token = sdk.chainList.getNativeToken(chain.id);
+    if (_token.toUpperCase() != token.symbol.toUpperCase()) {
+        const erc20 = chain.tokens.find(t => t.symbol.toUpperCase() === _token.toUpperCase());
+        if (!erc20) return { success: false, error: `Token not supported: ${_token.toUpperCase()}` };
+        token = erc20;
+    };
+
+    // Process parameter data
+    const tokenAddress = token.symbol == 'ETH' ? NATIVE_TOKEN : token.contractAddress;
+    const parsedAmount = sdk.utils.parseUnits(_amount, token.decimals).toString();
+    console.log(`Withdraw - Chain: ${chain.id}, Token: ${token.symbol}, TokenAddress: ${tokenAddress}, Amount: ${parsedAmount}`);
+
+    // Execute withdraw
+    const result = await sdk.execute({
+        toChainId: chain.id as SUPPORTED_CHAINS_IDS,
+        contractAddress: SYPHON_ADDRESS,
+        contractAbi: [{
+            "inputs": [
+                {
+                    "internalType": "address",
+                    "name": "_asset",
+                    "type": "address"
+                },
+                {
+                    "internalType": "address",
+                    "name": "_recipient",
+                    "type": "address"
+                },
+                {
+                    "internalType": "uint256",
+                    "name": "_amount",
+                    "type": "uint256"
+                },
+                {
+                    "internalType": "uint256",
+                    "name": "_nullifier",
+                    "type": "uint256"
+                },
+                {
+                    "internalType": "uint256",
+                    "name": "_newCommitment",
+                    "type": "uint256"
+                },
+                {
+                    "internalType": "bytes",
+                    "name": "_proof",
+                    "type": "bytes"
+                }
+            ],
+            "name": "withdraw",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        }],
+        functionName: 'withdraw',
+        buildFunctionParams: (
+            token: SUPPORTED_TOKENS,
+            amount: string,
+            chainId: SUPPORTED_CHAINS_IDS,
+            userAddress: `0x${string}`
+        ) => {
+            return { functionParams: [tokenAddress, _recipient, parsedAmount, nullifier, newCommitment, proof] };
+        }
+    });
+
+    if (result){
+        return {success: true, transactionHash: result.transactionHash};
+    } else 
+        return {success: false, transactionHash: undefined};
 }

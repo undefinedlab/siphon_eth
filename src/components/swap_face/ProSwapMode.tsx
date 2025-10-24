@@ -28,8 +28,8 @@ export default function ProSwapMode({
     chain: "ETH",
     dex: "Uniswap"
   }]);
-  const [withdrawInstructions, setWithdrawInstructions] = useState([
-    { chain: "Ethereum Sepolia", token: "USDC", amount: "", address: "" }
+  const [withdrawals, setWithdrawals] = useState([
+    { chain: "Ethereum Sepolia", token: "ETH", amount: "", recipient: "" }
   ]);
   const [depositInputs, setDepositInputs] = useState([
     { chain: "Ethereum Sepolia", token: "ETH", amount: "" }
@@ -69,7 +69,7 @@ export default function ProSwapMode({
 
         if (result.success) {
           // Clear the form after successful transfer
-          console.log(`Successfully deposited ${dep.amount} ${dep.token} for Deposit #${i+1}:`);
+          console.log(`Successfully deposited ${dep.amount} ${dep.token} for Deposit #${i+1}`);
           setDepositInputs([{chain: "Ethereum Sepolia", token: "ETH", amount: ""}]);
         } else {
           alert(`Deposit failed: ${result.error}`);
@@ -91,8 +91,51 @@ export default function ProSwapMode({
     console.log('Executing Pro Strategy', swaps);
   };
 
-  const handleWithdraw = () => {
-    console.log(`Withdrawing to addresses`, withdrawInstructions);
+  const handleWithdraw = async () => {
+    console.log('Withdrawing from Siphon Vault');
+
+    // Confirm that wallet is connected
+    if (!nexusInitialized) {
+      alert('Please connect wallet first');
+      return;
+    }
+
+    // Validate inputs
+    for (let i = 0; i < withdrawals.length; i++) {
+      const w = withdrawals[i];
+      if (!w || parseFloat(w.amount) <= 0) {
+        alert(`Please enter a valid amount for Withdrawal #${i+1}`);
+        return;
+      }
+      if (!w.token) {
+        alert(`Please select a token for Withdrawal #${i+1}`);
+        return;
+      }
+    }
+    
+    // Execute each withdrawal
+    for (let i = 0; i < withdrawals.length; i++) {
+      try {
+        const w = withdrawals[i];
+
+        // Withdraw funds from the vault
+        const result = await withdraw(w.chain, w.token, w.amount, w.recipient);
+        console.log('Waiting for transaction confirmation...');
+        await new Promise(resolve => setTimeout(resolve, 1000)); // Wait 3 seconds
+
+        if (result.success) {
+          // Clear the form after successful transfer
+          console.log(`Successfully withdrawn ${w.amount} ${w.token} for Withdrawal #${i+1}`);
+          setWithdrawals([{chain: "Ethereum Sepolia", token: "ETH", amount: "", recipient: ""}]);
+        } else {
+          alert(`Withdraw failed: ${result.error}`);
+          console.log(result.error);
+        }
+      } catch (error: unknown ) {
+        console.error('Withdraw failed:', error);
+        alert(`Withdraw failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      }
+    }
   };
 
   const addSwap = () => {
@@ -125,21 +168,21 @@ export default function ProSwapMode({
     setSwaps(updatedSwaps);
   };
 
-  const addWithdrawInstruction = () => {
-    setWithdrawInstructions([...withdrawInstructions, { chain: "ETH", token: "USDC", amount: "", address: "" }]);
+  const addWithdrawal = () => {
+    setWithdrawals([...withdrawals, { chain: "Ethereum Sepolia", token: "ETH", amount: "", recipient: "" }]);
   };
 
-  const removeWithdrawInstruction = (index: number) => {
-    if (withdrawInstructions.length > 1) {
-      setWithdrawInstructions(withdrawInstructions.filter((_, i) => i !== index));
+  const removeWithdrawal = (index: number) => {
+    if (withdrawals.length > 1) {
+      setWithdrawals(withdrawals.filter((_, i) => i !== index));
     }
   };
 
-  const updateWithdrawInstruction = (index: number, field: string, value: string) => {
-    const updatedInstructions = withdrawInstructions.map((instruction, i) => 
-      i === index ? { ...instruction, [field]: value } : instruction
+  const updateWithdrawal = (index: number, field: string, value: string) => {
+    const updatedWithdrawals = withdrawals.map((w, i) => 
+      i === index ? { ...w, [field]: value } : w
     );
-    setWithdrawInstructions(updatedInstructions);
+    setWithdrawals(updatedWithdrawals);
   };
 
   const addDepositInput = () => {
@@ -187,10 +230,10 @@ export default function ProSwapMode({
   const calculateTotalWithdrawn = () => {
     const totals: { [key: string]: number } = {};
     
-    withdrawInstructions.forEach(instruction => {
-      const amount = parseFloat(instruction.amount) || 0;
+    withdrawals.forEach(w => {
+      const amount = parseFloat(w.amount) || 0;
       if (amount > 0) {
-        totals[instruction.token] = (totals[instruction.token] || 0) + amount;
+        totals[w.token] = (totals[w.token] || 0) + amount;
       }
     });
     
@@ -448,7 +491,7 @@ export default function ProSwapMode({
                           value={swap.liquidityChain}
                           onChange={(e) => updateSwap(index, 'liquidityChain', e.target.value)}
                         >
-                          <option value="ETH">Ethereum</option>
+                          <option value="ETHEREUM">Ethereum</option>
                           <option value="POLYGON">Polygon</option>
                           <option value="ARBITRUM">Arbitrum</option>
                           <option value="BASE">Base</option>
@@ -589,14 +632,14 @@ export default function ProSwapMode({
         
         <div className="column-content">
           <div className="withdraw-section">
-          {withdrawInstructions.map((instruction, index) => (
+          {withdrawals.map((w, index) => (
             <div key={index} className="withdraw-item">
               <div className="withdraw-header">
                 <span className="withdraw-label">Output {index + 1}</span>
-                {withdrawInstructions.length > 1 && (
+                {withdrawals.length > 1 && (
                   <button 
                     className="remove-withdraw"
-                    onClick={() => removeWithdrawInstruction(index)}
+                    onClick={() => removeWithdrawal(index)}
                   >
                     ×
                   </button>
@@ -609,15 +652,13 @@ export default function ProSwapMode({
                     <label>Chain</label>
                     <div className="token-selector">
                       <select
-                        value={instruction.chain}
-                        onChange={(e) => updateWithdrawInstruction(index, 'chain', e.target.value)}
+                        value={w.chain}
+                        onChange={(e) => updateWithdrawal(index, 'chain', e.target.value)}
                       >
-                        <option value="ETH">Ethereum</option>
-                        <option value="OPTIMISM">Optimism</option>
-                        <option value="BASE">Base</option>
-                        <option value="ARBITRUM">Arbitrum</option>
-                        <option value="XMR" disabled>XMR</option>
-                        <option value="ZCASH" disabled>ZCash</option>
+                      <option value="Ethereum Sepolia">Ethereum</option>
+                      <option value="Base Sepolia" disabled>Base</option>
+                      <option value="Arbitrum Sepolia" disabled>Arbitrum</option>
+                      <option value="Optimism Sepolia" disabled>Optimism</option>
                       </select>
                     </div>
                   </div>
@@ -626,13 +667,12 @@ export default function ProSwapMode({
                     <label>Token</label>
                     <div className="token-selector">
                       <select
-                        value={instruction.token}
-                        onChange={(e) => updateWithdrawInstruction(index, 'token', e.target.value)}
+                        value={w.token}
+                        onChange={(e) => updateWithdrawal(index, 'token', e.target.value)}
                       >
                         <option value="ETH">ETH</option>
                         <option value="USDC">USDC</option>
                         <option value="USDT">USDT</option>
-                        <option value="WBTC">WBTC</option>
                       </select>
                     </div>
                   </div>
@@ -642,8 +682,8 @@ export default function ProSwapMode({
                     <input
                       type="number"
                       placeholder="0.0"
-                      value={instruction.amount}
-                      onChange={(e) => updateWithdrawInstruction(index, 'amount', e.target.value)}
+                      value={w.amount}
+                      onChange={(e) => updateWithdrawal(index, 'amount', e.target.value)}
                     />
                   </div>
                 </div>
@@ -653,15 +693,15 @@ export default function ProSwapMode({
                   <input
                     type="text"
                     placeholder="Enter wallet address"
-                    value={instruction.address}
-                    onChange={(e) => updateWithdrawInstruction(index, 'address', e.target.value)}
+                    value={w.recipient}
+                    onChange={(e) => updateWithdrawal(index, 'recipient', e.target.value)}
                   />
                 </div>
               </div>
             </div>
           ))}
           
-          <button className="add-withdraw-button" onClick={addWithdrawInstruction}>
+          <button className="add-withdraw-button" onClick={addWithdrawal}>
             + Add Output
           </button>
           </div>
@@ -670,7 +710,7 @@ export default function ProSwapMode({
         <div className="withdraw-stats">
           <div className="stat-row">
             <span>Total Outputs</span>
-            <span>{withdrawInstructions.length} transaction{withdrawInstructions.length !== 1 ? 's' : ''}</span>
+            <span>{withdrawals.length} transaction{withdrawals.length !== 1 ? 's' : ''}</span>
           </div>
           <div className="stat-row">
             <span>Withdrawal Fee</span>
