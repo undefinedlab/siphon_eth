@@ -1,0 +1,26 @@
+[
+  {
+    "inputs": [
+      {
+        "internalType": "uint256[24]",
+        "name": "_proof",
+        "type": "uint256[24]"
+      },
+      {
+        "internalType": "uint256[4]",
+        "name": "_pubSignals",
+        "type": "uint256[4]"
+      }
+    ],
+    "name": "verifyProof",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  }
+]
