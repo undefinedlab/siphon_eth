@@ -1,6 +1,14 @@
-import { NexusSDK, SUPPORTED_TOKENS, SUPPORTED_CHAINS_IDS, EthereumProvider } from '@avail-project/nexus-core';
+import { NexusSDK, SUPPORTED_TOKENS, SUPPORTED_CHAINS_IDS, EthereumProvider, NexusNetwork } from '@avail-project/nexus-core';
+import { parseUnits } from 'ethers';
 
-export const sdk = new NexusSDK({ network: 'testnet' });
+// Declare SDK singleton variable
+const sdk = new NexusSDK({ 
+  network: 'testnet' as NexusNetwork
+});
+
+export function getNexusSDK(): NexusSDK {
+  return sdk;
+}
 
 // Thin wrapper that calls sdk.isInitialized() from the SDK
 export function isInitialized() {
@@ -9,16 +17,16 @@ export function isInitialized() {
 
 export async function initializeWithProvider(provider: unknown) {
   if (!provider) throw new Error('No EIP-1193 provider (e.g., MetaMask) found');
-  
+
   //If the SDK is already initialized, return
   if (sdk.isInitialized()) return;
 
   //If the SDK is not initialized, initialize it with the provider passed as a parameter
-    await sdk.initialize(provider as unknown as EthereumProvider);
+  await sdk.initialize(provider as unknown as EthereumProvider);
 }
 
 export async function deinit() {
-  
+
   //If the SDK is not initialized, return
   if (!sdk.isInitialized()) return;
 
@@ -33,50 +41,15 @@ export async function getUnifiedBalances() {
 }
 
 // Bridge tokens using the actual Nexus SDK
-export async function bridgeTokens(token: string, amount: string, chainId: number, sourceChains?: number[]) {
-  console.log('bridgeTokens called with:', { token, amount, chainId, sourceChains });
-  
-  if (!sdk.isInitialized()) {
-    console.error('SDK not initialized');
-    throw new Error('SDK not initialized');
-  }
-  
-  try {
-    console.log('Calling sdk.bridge with:', {
-      token: token.toUpperCase(),
-      amount: parseFloat(amount),
-      chainId: chainId,
-      sourceChains: sourceChains
-    });
-    
-    // Use the  Nexus SDK bridge method
-    const result = await sdk.bridge({
-      token: token.toUpperCase() as SUPPORTED_TOKENS, // Convert to supported token format
-      amount: parseFloat(amount),
-      chainId: chainId as SUPPORTED_CHAINS_IDS, // Convert to supported chain ID format
-      sourceChains: sourceChains
-    });
-    
-    console.log('SDK bridge result:', result);
-    return result;
-  } catch (error: unknown) {
-    console.error('Bridge failed:', error);
-    return { 
-      success: false, 
-      error: error instanceof Error ? error.message : 'Bridge transaction failed' 
-    };
-  }
-}
-
 // Transfer tokens using the actual Nexus SDK
 export async function transferTokens(chainId: number, token: string, amount: string, recipient: string) {
   console.log('transferTokens called with:', { chainId, token, amount, recipient });
-  
+
   if (!sdk.isInitialized()) {
     console.error('SDK not initialized');
     throw new Error('SDK not initialized');
   }
-  
+
   try {
     console.log('Calling sdk.transfer with:', {
       chainId: chainId,
@@ -84,7 +57,7 @@ export async function transferTokens(chainId: number, token: string, amount: str
       amount: parseFloat(amount),
       recipient: recipient
     });
-    
+
     // Use the actual Nexus SDK transfer method
     const result = await sdk.transfer({
       chainId: chainId as SUPPORTED_CHAINS_IDS,
@@ -92,14 +65,14 @@ export async function transferTokens(chainId: number, token: string, amount: str
       amount: parseFloat(amount),
       recipient: recipient as `0x${string}` // Type assertion for address format
     });
-    
+
     console.log('SDK transfer result:', result);
     return result;
   } catch (error: unknown) {
     console.error('Transfer failed:', error);
-    return { 
-      success: false, 
-      error: error instanceof Error ? error.message : 'Transfer transaction failed' 
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Transfer transaction failed'
     };
   }
 }
