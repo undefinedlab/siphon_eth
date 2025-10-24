@@ -3,8 +3,8 @@ import { getNexusSDK } from './nexus';
 
 export const sdk = getNexusSDK();
 
-const SYPHON_ADDRESS = '0x6697452475A0C858218eb54247Ffdc9c8ca977cb';
 const NATIVE_TOKEN = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE";
+const ENTRYPOINT_ADDRESS = '0x43440e22471EcF16aB981ea7A4682FD8D1f4F017';
 
 export async function deposit(_chain: string, _token: string, _amount: string) {
     // Will need to replace this with actual precommitment hash
@@ -38,76 +38,98 @@ export async function deposit(_chain: string, _token: string, _amount: string) {
 
     // Execute bridging and deposit to vault
     if (token.symbol == 'ETH') {
-        // Native Asset Bridging
-        const bridgeResult = await sdk.bridge({
+        const result = await sdk.bridgeAndExecute({
             token: token.symbol as SUPPORTED_TOKENS,
-            amount: _amount,
-            chainId: chain.id as SUPPORTED_CHAINS_IDS,
-            sourceChains: sourceChains
-        });
-
-        if(bridgeResult.success) {
-            console.log(`Native Asset Bridging Executed: ${bridgeResult.transactionHash}`);
-        } else {
-            console.log(`Native Asset Bridging Not Executed: ${bridgeResult.error}`);
-        }
-
-        // Native Asset Deposit
-        const result = await sdk.execute({
+            amount: Number(_amount),
             toChainId: chain.id as SUPPORTED_CHAINS_IDS,
-            contractAddress: SYPHON_ADDRESS,
+            sourceChains: sourceChains,
+            execute: {
+                contractAddress: ENTRYPOINT_ADDRESS,
+                contractAbi: [{
+                    "inputs": [
+                        {
+                            "internalType": "contract IERC20",
+                            "name": "_asset",
+                            "type": "address"
+                        },
+                        {
+                            "internalType": "uint256",
+                            "name": "_amount",
+                            "type": "uint256"
+                        },
+                        {
+                            "internalType": "uint256",
+                            "name": "_precommitment",
+                            "type": "uint256"
+                        }
+                    ],
+                    "name": "deposit",
+                    "outputs": [
+                        {
+                            "internalType": "uint256",
+                            "name": "_commitment",
+                            "type": "uint256"
+                        }
+                    ],
+                    "stateMutability": "payable",
+                    "type": "function"
+                }],
+                functionName: 'deposit',
+                buildFunctionParams: (
+                    token: SUPPORTED_TOKENS,
+                    amount: string,
+                    chainId: SUPPORTED_CHAINS_IDS,
+                    userAddress: `0x${string}`
+                ) => {
+                    return { functionParams: [NATIVE_TOKEN, decAmount, precommitment] };
+                },
+                value: `0x${hexAmount}`
+            },
+            waitForReceipt: true
+        });
+        return { success: result.success, execute: result.executeTransactionHash, bridge: result.bridgeTransactionHash, error: result.error }
+    } else {
+        // Set allowance to Nexus router & entrypoint
+        await sdk.setAllowance(chain.id, [token.symbol], BigInt(decAmount));
+        const allowance = await sdk.execute({
+            toChainId: chain.id as SUPPORTED_CHAINS_IDS,
+            contractAddress: token.contractAddress,
             contractAbi: [{
                 "inputs": [
-                    {
-                        "internalType": "contract IERC20",
-                        "name": "_asset",
-                        "type": "address"
-                    },
-                    {
-                        "internalType": "uint256",
-                        "name": "_amount",
-                        "type": "uint256"
-                    },
-                    {
-                        "internalType": "uint256",
-                        "name": "_precommitment",
-                        "type": "uint256"
-                    }
+                    { "internalType": 'address', "name": 'spender', "type": 'address' },
+                    { "internalType": 'uint256', "name": 'amount', "type": 'uint256' },
                 ],
-                "name": "deposit",
-                "outputs": [
-                    {
-                        "internalType": "uint256",
-                        "name": "_commitment",
-                        "type": "uint256"
-                    }
-                ],
-                "stateMutability": "payable",
-                "type": "function"
+                "name": 'approve',
+                "outputs": [{ "internalType": 'bool', "name": '', "type": 'bool' }],
+                "stateMutability": 'nonpayable',
+                "type": 'function',
             }],
-            functionName: 'deposit',
+            functionName: 'approve',
             buildFunctionParams: (
                 token: SUPPORTED_TOKENS,
                 amount: string,
                 chainId: SUPPORTED_CHAINS_IDS,
                 userAddress: `0x${string}`
             ) => {
-                return { functionParams: [NATIVE_TOKEN, decAmount, precommitment] };
-            },
-            value: `0x${hexAmount}`,
-            tokenApproval: undefined
+                return { functionParams: [ENTRYPOINT_ADDRESS, decAmount] };
+            }
         });
-        return {success: true, transactionHash: result.transactionHash, error: undefined};
-    } else {
+
+        // Wait few seconds for approvals to complete transaction
+        for(let i = 0; i < 15; i++) {
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            if (!allowance.transactionHash) break;
+        }
+
         // Alternative Asset Bridging & Deposit
         const assetAddress = token.contractAddress;
         const result = await sdk.bridgeAndExecute({
             token: token.symbol as SUPPORTED_TOKENS,
-            amount: _amount,
+            amount: Number(_amount),
             toChainId: chain.id as SUPPORTED_CHAINS_IDS,
             sourceChains: sourceChains,
             execute: {
-                contractAddress: SYPHON_ADDRESS,
+                contractAddress: ENTRYPOINT_ADDRESS,
                 contractAbi: [{
                     "inputs": [
                         {
@@ -146,13 +168,11 @@ export async function deposit(_chain: string, _token: string, _amount: string) {
                 ) => {
                     return { functionParams: [assetAddress, decAmount, precommitment] };
                 },
-                tokenApproval: {
-                    token: token.symbol as SUPPORTED_TOKENS,
-                    amount: _amount
-                }
-            }
+                waitForReceipt: true
+            },
+            waitForReceipt: true
         });
-        return {success: result.success, transactionHash: result.executeTransactionHash, error: result.error};
+        return { success: result.success, transactionHash: result.executeTransactionHash, error: result.error };
     }
 }
 
@@ -182,7 +202,7 @@ export async function withdraw(_chain: string, _token: string, _amount: string, 
     // Execute withdraw
     const result = await sdk.execute({
         toChainId: chain.id as SUPPORTED_CHAINS_IDS,
-        contractAddress: SYPHON_ADDRESS,
+        contractAddress: ENTRYPOINT_ADDRESS,
         contractAbi: [{
             "inputs": [
                 {
@@ -232,8 +252,8 @@ export async function withdraw(_chain: string, _token: string, _amount: string, 
         }
     });
 
-    if (result){
-        return {success: true, transactionHash: result.transactionHash};
-    } else 
-        return {success: false, transactionHash: undefined};
+    if (result) {
+        return { success: true, transactionHash: result.transactionHash };
+    } else
+        return { success: false, transactionHash: undefined };
 }

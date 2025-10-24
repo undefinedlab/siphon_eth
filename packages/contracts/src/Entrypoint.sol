@@ -5,6 +5,7 @@ import {IVault} from "./interfaces/IVault.sol";
 import {IEntrypoint} from "./interfaces/IEntrypoint.sol";
 import {NativeVault} from "./states/NativeVault.sol";
 import {AlternativeVault} from "./states/AlternativeVault.sol";
+import {IERC20} from '@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol';
 
 contract Entrypoint is IEntrypoint {
     /// @notice The address of the native asset (e.g., ETH)
@@ -72,6 +73,8 @@ contract Entrypoint is IEntrypoint {
             _commitment = vault.deposit{value: msg.value}(msg.value, _precommitment);
         } else {
             if(_amount <= 0 || msg.value > 0) revert InvalidDepositAmount();
+            IERC20(_asset).transferFrom(msg.sender, address(this),_amount);       // First move the fund from Depositor to Entrypoint
+            IERC20(_asset).approve(address(vault), _amount);                      // Then approve the vault to pull the fund
             _commitment = vault.deposit(_amount, _precommitment);
         }
     }
