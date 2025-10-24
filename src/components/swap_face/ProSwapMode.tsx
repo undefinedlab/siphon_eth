@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import "./ProSwapMode.css";
+import { getUnifiedBalances } from "../../lib/nexus";
+import { deposit, withdraw } from "../../lib/handler";
 
 interface ProSwapModeProps {
   isLoaded: boolean;
@@ -27,14 +29,62 @@ export default function ProSwapMode({
     dex: "Uniswap"
   }]);
   const [withdrawInstructions, setWithdrawInstructions] = useState([
-    { chain: "ETH", token: "USDC", amount: "", address: "" }
+    { chain: "Ethereum Sepolia", token: "USDC", amount: "", address: "" }
   ]);
   const [depositInputs, setDepositInputs] = useState([
-    { chain: "ETH", token: "ETH", amount: "" }
+    { chain: "Ethereum Sepolia", token: "ETH", amount: "" }
   ]);
 
-  const handleDeposit = () => {
-    console.log(`Depositing to Siphon Vault`, depositInputs);
+  const handleDeposit = async () => {
+    console.log('Depositing to Siphon Vault');
+
+    // Confirm that wallet is connected
+    if (!nexusInitialized) {
+      alert('Please connect wallet first');
+      return;
+    }
+
+    // Validate inputs
+    for (let i = 0; i < depositInputs.length; i++) {
+      const dep = depositInputs[i];
+      if (!dep || parseFloat(dep.amount) <= 0) {
+        alert(`Please enter a valid amount for Deposit #${i+1}`);
+        return;
+      }
+      if (!dep.token) {
+        alert(`Please select a token for Deposit #${i+1}`);
+        return;
+      }
+    }
+    
+    // Execute each deposit
+    for (let i = 0; i < depositInputs.length; i++) {
+      try {
+        const dep = depositInputs[i];
+
+        // Bridge funds from all possible sources and deposit them into the vault
+        const result = await deposit(dep.chain, dep.token, dep.amount);
+        console.log('Waiting for transaction confirmation...');
+        await new Promise(resolve => setTimeout(resolve, 1000)); // Wait 3 seconds
+
+        if (result.success) {
+          // Clear the form after successful transfer
+          console.log(`Successfully deposited ${dep.amount} ${dep.token} for Deposit #${i+1}:`);
+          setDepositInputs([{chain: "Ethereum Sepolia", token: "ETH", amount: ""}]);
+        } else {
+          alert(`Deposit failed: ${result.error}`);
+          console.log(result.error);
+        }
+      } catch (error: unknown ) {
+        console.error('Deposit failed:', error);
+        alert(`Deposit failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      }
+    }
+
+    // Refresh balances
+    console.log('Refreshing balances after deposit...');
+    const refreshedBalances = await getUnifiedBalances();
+    //onBalancesUpdated(refreshedBalances);
   };
 
   const handleSwap = () => {
@@ -192,11 +242,10 @@ export default function ProSwapMode({
                       value={input.chain}
                       onChange={(e) => updateDepositInput(index, 'chain', e.target.value)}
                     >
-                      <option value="ETH">Ethereum</option>
-                      <option value="BTC" disabled>Bitcoin</option>
-                      <option value="XMR" disabled>XMR</option>
-                      <option value="ZCASH" disabled>ZCash</option>
-                      <option value="LTC" disabled>Litecoin</option>
+                      <option value="Ethereum Sepolia">Ethereum</option>
+                      <option value="Base Sepolia" disabled>Base</option>
+                      <option value="Arbitrum Sepolia" disabled>Arbitrum</option>
+                      <option value="Optimism Sepolia" disabled>Optimism</option>
                     </select>
                   </div>
                 </div>
