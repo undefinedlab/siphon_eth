@@ -1,4 +1,4 @@
-<div align="center">
+<div align="left">
 
 # 🔒 Siphon Protocol
 
@@ -30,15 +30,13 @@
 
 
 #### 🔍 **Wallets Are Tracked**
-- **Every transaction** exposes your entire financial history
-- **Portfolio strategies** are visible to competitors and regulators
-- **Institutional traders** cannot operate with confidentiality
+- **Chain analytics links addresses** timing, and flows into identities.
+- **Your PNL**, history and every move are visible.
 
 </td>
 <td width="33%">
 
 #### 🤖 **Value is Extracted**
-- **Order intent** leaks milliseconds before execution
 - **Visible flow**  widens quotes and worsens fills.
 - **Sniping and MEV**  extraction destroys profitability.
 
@@ -47,7 +45,6 @@
 
 #### 💰 **The Privacy-Liquidity Dilemma**
 - **Privacy coins** (ZEC, XMR) lack DeFi integration
-- **Dark pools** are fragmented and underutilized
 - **Users forced** to choose: privacy OR best execution
 
 </td>
@@ -64,9 +61,7 @@
 
 ## 🚀 The Siphon Solution
 
-<div align="center">
-
-### 🌉 **The Privacy Bridge**
+<div align="left">
 
 **Siphon serves as the seamless privacy-preserving gateway between public and private capital, facilitating secure, private and verifiable movement of assets across multiple blockchains. By enabling frictionless access to the deepest, most liquid DeFi opportunities in a true omnichain environment, Siphon empowers institutions and individuals alike to transact and deploy strategies at scale—without sacrificing confidentiality, competitive edge, or market efficiency.**
 </div>
@@ -107,46 +102,50 @@
 
 ## 🛠️ Technical Architecture
 
-### 🔧 Core Technologies:
+### 🔧 Core Technologies
 
 <table>
-<tr>
-<td width="25%" align="center">
+  <tr>
+    <td width="33%" align="center">
 
 #### 🔐 **FHE**
-**Fully Homomorphic Encryption**
+**Fully Homomorphic Encryption**  
 Enables computation on encrypted data
 
-</td>
-<td width="25%" align="center">
+  </td>
+    <td width="33%" align="center">
 
 #### 🎭 **ZK Proofs**
-**Zero-Knowledge Proofs**
-Cryptographic assurance without revealing data
+**Zero-Knowledge Proofs**  
+Proves correctness—no data revealed
 
-</td>
-<td width="25%" align="center">
+  </td>
+    <td width="33%" align="center">
 
 #### 🌉 **Avail Nexus SDK**
 **Cross-Chain Operations**  
 Seamless multi-chain execution
 
-</td>
-<td width="25%" align="center">
+  </td>
+  </tr>
+  <tr>
+    <td width="33%" align="center">
 
 #### 📈 **Pyth Network**
 **Price Feeds & Randomness**  
-Reliable price oracles and random number generation
+Reliable oracles and entropy
 
-</td>
-<td width="25%" align="center">
+  </td>
+    <td width="33%" align="center">
 
 #### 🛠️ **Hardhat**
 **Deployment Tool**  
 Flexible, developer-friendly smart contract deployment
 
-</td>
-</tr>
+  </td>
+    <td width="33%" align="center">
+    </td>
+  </tr>
 </table>
 
 
@@ -184,6 +183,33 @@ Flexible, developer-friendly smart contract deployment
 │ - Release on valid ZK proof verification                     │
 └─────────────────────────────────────────────────────────────┘
 ```
+
+
+## ⚖️ Compliance & Regulatory Considerations
+
+Siphon Protocol should integrate multiple compliance mechanisms to address regulatory requirements while maintaining core privacy principles:
+
+### 🛡️ Risk Screening Gate
+- **On-Chain Risk Oracle Integration**: Funds entering the Siphon Vault must pass validation through established risk oracles (e.g., Chainalysis, TRM, or in-protocol scoring systems)
+- **Source Verification**: Addresses are screened against known restricted or sanctioned lists before admission
+
+### 🔐 Zero-Knowledge Proof of Compliance
+- **Privacy-Preserving Verification**: Users can prove they meet KYC/AML requirements without revealing identity
+- **Compliant Service Provider Integration**: Works with compliance providers to generate non-revealing proofs
+- **Address Sanctioning**: Demonstrates funds are not from restricted address lists, cryptographically
+
+### 📊 Verifiable Transparency Layer
+- **Per-Batch Proofs**: Each execution batch emits a zero-knowledge event proving:
+  - Encrypted trades were executed correctly
+  - State updates followed protocol rules
+  - Fees were computed and distributed correctly
+  - All without revealing underlying sensitive data
+- **Cryptographic Guarantees**: Mathematical proofs ensure system integrity
+- **Audit Trail**: Maintains verifiable record of protocol correctness while preserving user privacy
+
+> **Note**: These compliance mechanisms are part of the architectural design and serve to demonstrate how privacy and regulatory compliance can coexist. Real-world implementation would require integration with licensed compliance service providers and legal frameworks.
+
+
 
 ## 📁 Project Structure
 ```
@@ -290,9 +316,20 @@ This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) 
 ---
 
 
-## ⚠️ Disclaimer
+## ⚠️ Critical Disclaimer
 
-> **This software is in active development and should be used for testing purposes only. Always conduct your own research and never invest more than you can afford to lose.**
+### Proof of Concept & Academic Exploration
+> **This project is a proof of concept and represents an exploration of potential directions for privacy-preserving DeFi protocols. It is NOT intended for production use, real-world financial transactions, or any non-academic purposes.**
+
+### No Warranty or Responsibility
+> **THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY.**
+
+### Usage Restrictions
+- **Academic & Research Only**: This code is intended solely for academic study, research, and educational purposes
+- **NOT FOR PRODUCTION**: Do not deploy this code in any production environment
+- **NOT FOR FINANCIAL USE**: Do not use for any actual financial transactions or trading
+- **EXPERIMENTAL**: This is experimental software with no security guarantees
+- **Zero Responsibility**: Authors accept zero responsibility for any use, misuse, or consequences
 
 ---
 
