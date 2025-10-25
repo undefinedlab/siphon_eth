@@ -217,6 +217,19 @@ export async function deposit(_srcChainName: string, _token: string, _amount: st
 }
 
 export async function withdraw(_chain: string, _token: string, _amount: string, _recipient: string) {
+    
+    // Get chain & token
+    const chain = sdk.utils.getSupportedChains(0).find(c => c.name.toUpperCase() === _chain.toUpperCase());
+    if (chain == undefined) {
+        return { success: false, error: `Chain not supported: ${_chain.toUpperCase()}` };
+    }
+    let token = sdk.chainList.getNativeToken(chain.id);
+    if (_token.toUpperCase() != token.symbol.toUpperCase()) {
+        const erc20 = chain.tokens.find(t => t.symbol.toUpperCase() === _token.toUpperCase());
+        if (!erc20) return { success: false, error: `Token not supported: ${_token.toUpperCase()}` };
+        token = erc20;
+    };
+    
     const poseidon = await buildPoseidon();
     const F = poseidon.F;
 
@@ -225,7 +238,7 @@ export async function withdraw(_chain: string, _token: string, _amount: string, 
     let storedDeposit = null;
     for (let i = 0; i < localStorage.length; i++) {
         const key = localStorage.key(i);
-        if (key && key.startsWith(`${_chain}-${_token}-`)) {
+        if (key && key.startsWith(`${chain.id}-${token.symbol}-`)) {
             const depositData = JSON.parse(localStorage.getItem(key) || '{}');
             if (depositData.commitment) {
                 storedDeposit = depositData;
@@ -242,18 +255,6 @@ export async function withdraw(_chain: string, _token: string, _amount: string, 
     const existingNullifier = BigInt(storedDeposit.nullifier);
     const existingCommitment = BigInt(storedDeposit.commitment);
 
-    // Get chain & token
-    const chain = sdk.utils.getSupportedChains(0).find(c => c.name.toUpperCase() === _chain.toUpperCase());
-    if (chain == undefined) {
-        return { success: false, error: `Chain not supported: ${_chain.toUpperCase()}` };
-    }
-    let token = sdk.chainList.getNativeToken(chain.id);
-    if (_token.toUpperCase() != token.symbol.toUpperCase()) {
-        const erc20 = chain.tokens.find(t => t.symbol.toUpperCase() === _token.toUpperCase());
-        if (!erc20) return { success: false, error: `Token not supported: ${_token.toUpperCase()}` };
-        token = erc20;
-    };
-
     const existingValue = BigInt(sdk.utils.parseUnits(storedDeposit.amount, token.decimals).toString());
     const withdrawnValue = BigInt(sdk.utils.parseUnits(_amount, token.decimals).toString());
 
@@ -269,7 +270,7 @@ export async function withdraw(_chain: string, _token: string, _amount: string, 
     const commitments: bigint[] = [];
     for (let i = 0; i < localStorage.length; i++) {
         const key = localStorage.key(i);
-        if (key && key.startsWith(`${_chain}-${_token}-`)) { // Assuming a naming convention for commitment keys
+        if (key && key.startsWith(`${chain.id}-${token.symbol}-`)) { // Assuming a naming convention for commitment keys
             const storedData = JSON.parse(localStorage.getItem(key) || '{}');
             if (storedData.commitment) {
                 commitments.push(BigInt(storedData.commitment));
