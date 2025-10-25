@@ -7,6 +7,7 @@ import { LeanIMT } from "@zk-kit/lean-imt";
 
 export const sdk = getNexusSDK();
 
+const VAULT_CHAIN_ID = 11155111  // Vault contract is located in ETH Sepolia
 const NATIVE_TOKEN = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE";
 const ENTRYPOINT_ADDRESS = '0x43440e22471EcF16aB981ea7A4682FD8D1f4F017';
 
@@ -21,7 +22,7 @@ function encodeProof(proofArray: string[]): `0x${string}` {
     return `0x${encoded}`;
 }
 
-export async function deposit(_chain: string, _token: string, _amount: string) {
+export async function deposit(_srcChainName: string, _token: string, _amount: string) {
     const poseidon = await buildPoseidon();
     const F = poseidon.F;
 
@@ -33,193 +34,181 @@ export async function deposit(_chain: string, _token: string, _amount: string) {
     const precommitment = F.toString(poseidon([nullifier, secret]));
 
     // Store secret, nullifier, precommitment, and amount in local storage
-    const depositId = `${_chain}-${_token}-${precommitment}`;
+    const depositId = `${VAULT_CHAIN_ID}-${_token}-${precommitment}`;
     localStorage.setItem(depositId, JSON.stringify({ secret: secret.toString(), nullifier: nullifier.toString(), precommitment: precommitment, amount: _amount }));
 
-    // Retrieve chain & token data
-    const chain = sdk.utils.getSupportedChains(0).find(c => c.name.toUpperCase() === _chain.toUpperCase());
-    if (chain == undefined) {
-        return { success: false, error: `Chain not supported: ${_chain.toUpperCase()}` };
+    // Retrieve source chain & token data
+    const srcChain = sdk.utils.getSupportedChains(0).find(c => c.name.toUpperCase() === _srcChainName.toUpperCase());
+    if (srcChain == undefined) {
+        return { success: false, error: `Chain not supported: ${_srcChainName.toUpperCase()}` };
     }
-    let token = sdk.chainList.getNativeToken(chain.id);
+    let token = sdk.chainList.getNativeToken(srcChain.id);
     if (_token.toUpperCase() != token.symbol.toUpperCase()) {
-        const erc20 = chain.tokens.find(t => t.symbol.toUpperCase() === _token.toUpperCase());
+        const erc20 = srcChain.tokens.find(t => t.symbol.toUpperCase() === _token.toUpperCase());
         if (!erc20) return { success: false, error: `Token not supported: ${_token.toUpperCase()}` };
         token = erc20;
     };
 
-    // Process parameter data
+    // Parse token
     const hexAmount = sdk.utils.parseUnits(_amount, token.decimals).toString(16);
     const decAmount = sdk.utils.parseUnits(_amount, token.decimals).toString();
-    console.log(`Deposit - Chain: ${chain.id}, Token: ${token.symbol}, TokenAddress: ${token.contractAddress}, Amount: ${decAmount}`);
 
-    // Get source chains for the given token
-    const userAsset = await sdk.getUnifiedBalance(token.symbol);
-    if (!userAsset || !userAsset.breakdown) {
-        return { success: false, error: `No balances found for ${token.symbol}` };
-    }
-    let sourceChains = userAsset.breakdown.filter(d => parseFloat(d.balance) > 0).map(b => b.chain.id);
-
-    console.log(`Pulling funds from the following chains: ${sourceChains}`);
-
-    // Execute bridging and deposit to vault
-    let result;
-    if (token.symbol == 'ETH') {
-        result = await sdk.bridgeAndExecute({
-            token: token.symbol as SUPPORTED_TOKENS,
-            amount: Number(_amount),
-            toChainId: chain.id as SUPPORTED_CHAINS_IDS,
-            sourceChains: sourceChains,
-            execute: {
-                contractAddress: ENTRYPOINT_ADDRESS,
-                contractAbi: [{
-                    "inputs": [
-                        {
-                            "internalType": "contract IERC20",
-                            "name": "_asset",
-                            "type": "address"
-                        },
-                        {
-                            "internalType": "uint256",
-                            "name": "_amount",
-                            "type": "uint256"
-                        },
-                        {
-                            "internalType": "uint256",
-                            "name": "_precommitment",
-                            "type": "uint256"
-                        }
-                    ],
-                    "name": "deposit",
-                    "outputs": [
-                        {
-                            "internalType": "uint256",
-                            "name": "_commitment",
-                            "type": "uint256"
-                        }
-                    ],
-                    "stateMutability": "payable",
-                    "type": "function"
-                }],
-                functionName: 'deposit',
-                buildFunctionParams: (
-                    token: SUPPORTED_TOKENS,
-                    amount: string,
-                    chainId: SUPPORTED_CHAINS_IDS,
-                    userAddress: `0x${string}`
-                ) => {
-                    return { functionParams: [NATIVE_TOKEN, decAmount, precommitment] };
-                },
-                value: `0x${hexAmount}`
-            },
-            waitForReceipt: true
-        });
-
-        //CHANGE: Added console.log to inspect the result object
-        console.log("SDK Execute Result (Native Asset Deposit):", result);
-    } else {
-        // Set allowance to Nexus router & entrypoint
-        await sdk.setAllowance(chain.id, [token.symbol], BigInt(decAmount));
-        const allowance = await sdk.execute({
-            toChainId: chain.id as SUPPORTED_CHAINS_IDS,
-            contractAddress: token.contractAddress,
-            contractAbi: [{
-                "inputs": [
-                    { "internalType": 'address', "name": 'spender', "type": 'address' },
-                    { "internalType": 'uint256', "name": 'amount', "type": 'uint256' },
-                ],
-                "name": 'approve',
-                "outputs": [{ "internalType": 'bool', "name": '', "type": 'bool' }],
-                "stateMutability": 'nonpayable',
-                "type": 'function',
-            }],
-            functionName: 'approve',
-            buildFunctionParams: (
-                token: SUPPORTED_TOKENS,
-                amount: string,
-                chainId: SUPPORTED_CHAINS_IDS,
-                userAddress: `0x${string}`
-            ) => {
-                return { functionParams: [ENTRYPOINT_ADDRESS, decAmount] };
-            }
-        });
-
-        // Wait few seconds for approvals to complete transaction
-        for (let i = 0; i < 15; i++) {
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            if (!allowance.transactionHash) break;
-        }
-
-        // Alternative Asset Bridging & Deposit
-        const assetAddress = token.contractAddress;
-        result = await sdk.bridgeAndExecute({
-            token: token.symbol as SUPPORTED_TOKENS,
-            amount: Number(_amount),
-            toChainId: chain.id as SUPPORTED_CHAINS_IDS,
-            sourceChains: sourceChains,
-            execute: {
-                contractAddress: ENTRYPOINT_ADDRESS,
-                contractAbi: [{
-                    "inputs": [
-                        {
-                            "internalType": "contract IERC20",
-                            "name": "_asset",
-                            "type": "address"
-                        },
-                        {
-                            "internalType": "uint256",
-                            "name": "_amount",
-                            "type": "uint256"
-                        },
-                        {
-                            "internalType": "uint256",
-                            "name": "_precommitment",
-                            "type": "uint256"
-                        }
-                    ],
-                    "name": "deposit",
-                    "outputs": [
-                        {
-                            "internalType": "uint256",
-                            "name": "_commitment",
-                            "type": "uint256"
-                        }
-                    ],
-                    "stateMutability": "payable",
-                    "type": "function"
-                }],
-                functionName: 'deposit',
-                buildFunctionParams: (
-                    token: SUPPORTED_TOKENS,
-                    amount: string,
-                    chainId: SUPPORTED_CHAINS_IDS,
-                    userAddress: `0x${string}`
-                ) => {
-                    return { functionParams: [assetAddress, decAmount, precommitment] };
-                },
-                waitForReceipt: true
-            },
-            waitForReceipt: true
-        });
-    }
     try {
-        // The result object from bridgeAndExecute already contains the transaction hash and success status
-        // We need to extract the commitment from the logs if bridgeResult.success is true
-        // For now, we'll continue to use precommitment as a placeholder
-        const storedData = JSON.parse(localStorage.getItem(depositId) || '{}');
-        localStorage.setItem(depositId, JSON.stringify({
-            ...storedData,
-            commitment: precommitment.toString() // Use precommitment as a placeholder
-        }));
+        console.log(`Pulling funds from '${srcChain.name}' - ${srcChain.id} chain`);
+        // Execute bridging fund from srcChain -> VAULT_CHAIN
+        const bridge = await sdk.bridge({
+            token: token.symbol as SUPPORTED_TOKENS,
+            amount: Number(_amount),
+            chainId: VAULT_CHAIN_ID,
+            sourceChains: [srcChain.id]
+        });
+        
+        // Execute deposit only if bridging is successful
+        if (bridge.success) {
+            let result;
+            if (token.symbol == 'ETH') {
+                result = await sdk.execute({
+                    toChainId: VAULT_CHAIN_ID,
+                    contractAddress: ENTRYPOINT_ADDRESS,
+                    contractAbi: [{
+                        "inputs": [
+                            {
+                                "internalType": "contract IERC20",
+                                "name": "_asset",
+                                "type": "address"
+                            },
+                            {
+                                "internalType": "uint256",
+                                "name": "_amount",
+                                "type": "uint256"
+                            },
+                            {
+                                "internalType": "uint256",
+                                "name": "_precommitment",
+                                "type": "uint256"
+                            }
+                        ],
+                        "name": "deposit",
+                        "outputs": [
+                            {
+                                "internalType": "uint256",
+                                "name": "_commitment",
+                                "type": "uint256"
+                            }
+                        ],
+                        "stateMutability": "payable",
+                        "type": "function"
+                    }],
+                    functionName: 'deposit',
+                    buildFunctionParams: (
+                        token: SUPPORTED_TOKENS,
+                        amount: string,
+                        chainId: SUPPORTED_CHAINS_IDS,
+                        userAddress: `0x${string}`
+                    ) => {
+                        return { functionParams: [NATIVE_TOKEN, decAmount, precommitment] };
+                    },
+                    value: `0x${hexAmount}`
+                });
+            } else {
+                // Set token allowance for Nexus router & entrypoint contracts
+                await sdk.setAllowance(VAULT_CHAIN_ID, [token.symbol], BigInt(decAmount));
+                const allowance = await sdk.execute({
+                    toChainId: VAULT_CHAIN_ID,
+                    contractAddress: token.contractAddress,
+                    contractAbi: [{
+                        "inputs": [
+                            { "internalType": 'address', "name": 'spender', "type": 'address' },
+                            { "internalType": 'uint256', "name": 'amount', "type": 'uint256' },
+                        ],
+                        "name": 'approve',
+                        "outputs": [{ "internalType": 'bool', "name": '', "type": 'bool' }],
+                        "stateMutability": 'nonpayable',
+                        "type": 'function',
+                    }],
+                    functionName: 'approve',
+                    buildFunctionParams: (
+                        token: SUPPORTED_TOKENS,
+                        amount: string,
+                        chainId: SUPPORTED_CHAINS_IDS,
+                        userAddress: `0x${string}`
+                    ) => {
+                        return { functionParams: [ENTRYPOINT_ADDRESS, decAmount] };
+                    }
+                });
 
-        return {
-            success: result.success,
-            transactionHash: result.executeTransactionHash?.toString() || result.executeTransactionHash,
-            error: result.error
-        };
+                // Wait for approve transaction to finish
+                for (let i = 0; i < 15; i++) {
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                    if (allowance.transactionHash) break;
+                }
+
+                // Alternative Asset Bridging & Deposit
+                const assetAddress = token.contractAddress;
+                result = await sdk.execute({
+                    toChainId: VAULT_CHAIN_ID,
+                    contractAddress: ENTRYPOINT_ADDRESS,
+                    contractAbi: [{
+                        "inputs": [
+                            {
+                                "internalType": "contract IERC20",
+                                "name": "_asset",
+                                "type": "address"
+                            },
+                            {
+                                "internalType": "uint256",
+                                "name": "_amount",
+                                "type": "uint256"
+                            },
+                            {
+                                "internalType": "uint256",
+                                "name": "_precommitment",
+                                "type": "uint256"
+                            }
+                        ],
+                        "name": "deposit",
+                        "outputs": [
+                            {
+                                "internalType": "uint256",
+                                "name": "_commitment",
+                                "type": "uint256"
+                            }
+                        ],
+                        "stateMutability": "payable",
+                        "type": "function"
+                    }],
+                    functionName: 'deposit',
+                    buildFunctionParams: (
+                        token: SUPPORTED_TOKENS,
+                        amount: string,
+                        chainId: SUPPORTED_CHAINS_IDS,
+                        userAddress: `0x${string}`
+                    ) => {
+                        return { functionParams: [assetAddress, decAmount, precommitment] };
+                    },
+                    waitForReceipt: true
+                });
+            }
+
+            // The result object from bridgeAndExecute already contains the transaction hash and success status
+            // We need to extract the commitment from the logs if bridgeResult.success is true
+            // For now, we'll continue to use precommitment as a placeholder
+            const storedData = JSON.parse(localStorage.getItem(depositId) || '{}');
+            localStorage.setItem(depositId, JSON.stringify({
+                ...storedData,
+                commitment: precommitment.toString() // Use precommitment as a placeholder
+            }));
+
+            return {
+                success: true,
+                bridgeTransaction: bridge.transactionHash,
+                executeTransaction: result.transactionHash,
+            };
+        }
+        return { success: false, error: bridge.error };
     } catch (e: any) {
-        console.error("Error during alternative asset deposit:", e);
-        return { success: false, error: `Deposit failed: ${e.message}` };
+        console.error("Error during deposit:", e);
+        return { success: false, error: e.message };
     }
 }
 
