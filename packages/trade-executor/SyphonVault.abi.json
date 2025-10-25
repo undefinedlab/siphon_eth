@@ -2,17 +2,32 @@
   {
     "inputs": [
       {
-        "internalType": "uint256[24]",
-        "name": "_proof",
-        "type": "uint256[24]"
+        "internalType": "address",
+        "name": "_asset",
+        "type": "address"
       },
       {
-        "internalType": "uint256[4]",
-        "name": "_pubSignals",
-        "type": "uint256[4]"
+        "internalType": "uint256",
+        "name": "_amount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_nullifier",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_newCommitment",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bytes",
+        "name": "_proof",
+        "type": "bytes"
       }
     ],
-    "name": "verifyProof",
+    "name": "verify",
     "outputs": [
       {
         "internalType": "bool",
@@ -21,6 +36,59 @@
       }
     ],
     "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_srcToken",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_dstToken",
+        "type": "address"
+      },
+      {
+        "internalType": "address payable",
+        "name": "_recipient",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_amountIn",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_minAmountOut",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint24",
+        "name": "_fee",
+        "type": "uint24"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_nullifier",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_newCommitment",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bytes",
+        "name": "_proof",
+        "type": "bytes"
+      }
+    ],
+    "name": "swap",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   }
 ]

@@ -40,6 +40,7 @@ def create_strategy():
             asset_in=data['asset_in'],
             asset_out=data['asset_out'],
             amount=data['amount'],
+            recipient_address=data['recipient_address'],
             encrypted_upper_bound=json.dumps(data.get('encrypted_upper_bound')),
             encrypted_lower_bound=json.dumps(data.get('encrypted_lower_bound')),
             server_key=json.dumps(data.get('server_key')),
