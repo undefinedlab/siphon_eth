@@ -5,6 +5,7 @@ import "./ProSwapMode.css";
 import { deposit, withdraw } from "../../lib/handler";
 import { createStrategy } from "../../lib/strategy";
 
+
 interface ProSwapModeProps {
   isLoaded: boolean;
   nexusInitialized: boolean;
@@ -26,7 +27,9 @@ export default function ProSwapMode({
     stopGain: "",
     liquidityChain: "ETH",
     chain: "ETH",
-    dex: "Uniswap"
+    dex: "Uniswap",
+    recipient_address: "",
+    recipientEnabled: false,
   }]);
   const [withdrawals, setWithdrawals] = useState([
     { chain: "Ethereum Sepolia", token: "ETH", amount: "", recipient: "" }
@@ -106,6 +109,7 @@ const handleSwap = async () => {
       amount: parseFloat(swap.amount),
       upper_bound: upperBound, // Raw numbers for Rust generator
       lower_bound: lowerBound,
+      recipient_address: swap.recipient_address,
     };
 
     console.log("Sending strategy to Payload Generator:", strategyPayload);
@@ -184,7 +188,9 @@ const handleSwap = async () => {
       stopGain: "",
       liquidityChain: "ETH",
       chain: "ETH",
-      dex: "Uniswap"
+      dex: "Uniswap",
+      recipient_address: "",
+      recipientEnabled: false,
     }]);
   };
 
@@ -484,6 +490,7 @@ const handleSwap = async () => {
                     </select>
                   </div>
                 </div>
+                
 
                 <div className="swap-arrow">→</div>
 
@@ -588,6 +595,32 @@ const handleSwap = async () => {
                 )}
               </div>
 
+              <div className="option-group">
+                    <div className="toggle-group">
+                      <label className="toggle-option">
+                        <input
+                          type="checkbox"
+                          checked={!!swap.recipientEnabled}
+                          onChange={(e) => updateSwap(index, 'recipientEnabled', e.target.checked)}
+                        />
+                        <span className="toggle-slider"></span>
+                        <span className="toggle-label">Enter Recipient Address</span>
+                      </label>
+                    </div>
+                    
+                    {swap.recipientEnabled && (
+                      <div className="address-input">
+                        <label>Recipient Address</label>
+                        <input
+                          type="text"
+                          placeholder="Enter address (e.g., 0x...)"
+                          value={swap.recipient_address}
+                          onChange={(e) => updateSwap(index, 'recipient_address', e.target.value)}
+                        />
+                      </div>
+                    )}
+                  </div>
+
               <div className="swap-preview">
                 <div className="preview-row">
                   <span>Rate</span>
@@ -624,6 +657,7 @@ const handleSwap = async () => {
             <span>Privacy Level</span>
             <span>Maximum</span>
           </div>
+
           <div className="stat-row">
             <span>Amount Received</span>
             <span>
