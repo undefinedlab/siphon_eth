@@ -9,7 +9,7 @@
     "lint": "eslint"
   },
   "dependencies": {
-    "@avail-project/nexus-core": "^0.0.1",
+    "@avail-project/nexus-core": "0.0.2-beta.7",
     "@zk-kit/lean-imt": "^2.2.4",
     "circomlibjs": "^0.1.7",
     "ethers": "^6.15.0",
