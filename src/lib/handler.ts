@@ -55,14 +55,18 @@ export async function deposit(_srcChainName: string, _token: string, _amount: st
 
     try {
         console.log(`Pulling funds from '${srcChain.name}' - ${srcChain.id} chain`);
-        // Execute bridging fund from srcChain -> VAULT_CHAIN
-        const bridge = await sdk.bridge({
-            token: token.symbol as SUPPORTED_TOKENS,
-            amount: Number(_amount),
-            chainId: VAULT_CHAIN_ID,
-            sourceChains: [srcChain.id]
-        });
         
+        // Execute bridging only if srcChain is not ETH Sepolia
+        let bridge;
+        if (srcChain.id != VAULT_CHAIN_ID){
+            bridge = await sdk.bridge({
+                token: token.symbol as SUPPORTED_TOKENS,
+                amount: Number(_amount),
+                chainId: VAULT_CHAIN_ID,
+                sourceChains: [srcChain.id]
+            });
+        } else bridge = {success: true, transactionHash: undefined};
+
         // Execute deposit only if bridging is successful
         if (bridge.success) {
             let result;
