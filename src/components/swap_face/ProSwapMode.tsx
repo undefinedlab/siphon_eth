@@ -3,6 +3,7 @@
 import { useState } from "react";
 import "./ProSwapMode.css";
 import { deposit, withdraw } from "../../lib/handler";
+import { createStrategy } from "../../lib/strategy";
 
 interface ProSwapModeProps {
   isLoaded: boolean;
@@ -78,9 +79,50 @@ export default function ProSwapMode({
     }
   };
 
-  const handleSwap = () => {
-    console.log('Executing Pro Strategy', swaps);
-  };
+const handleSwap = async () => {
+  console.log('Executing Pro Strategy', swaps);
+
+  if (!nexusInitialized) {
+    alert('Please connect wallet first');
+    return;
+  }
+
+  const swap = swaps[0];
+
+  if (!swap.amount || parseFloat(swap.amount) <= 0) {
+    alert('Please enter a valid amount');
+    return;
+  }
+
+  try {
+    const upperBound = parseFloat(swap.stopGain) || 0;
+    const lowerBound = parseFloat(swap.stopLoss) || 0;
+
+    const strategyPayload = {
+      user_id: "user123", // Replace with actual wallet/JWT user ID
+      strategy_type: "BRACKET_ORDER_LONG",
+      asset_in: swap.from,
+      asset_out: swap.to,
+      amount: parseFloat(swap.amount),
+      upper_bound: upperBound, // Raw numbers for Rust generator
+      lower_bound: lowerBound,
+    };
+
+    console.log("Sending strategy to Payload Generator:", strategyPayload);
+
+    const result = await createStrategy(strategyPayload);
+
+    if (result.success) {
+      console.log("Payload generated:", result.data);
+      alert("✅ Payload successfully generated. Check console for details.");
+    } else {
+      alert(`❌ Payload generation failed: ${result.error}`);
+    }
+  } catch (error: unknown) {
+    console.error("Error generating payload:", error);
+    alert(`Failed to generate payload: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
+};
 
   const handleWithdraw = async () => {
     console.log('Withdrawing from Siphon Vault');
