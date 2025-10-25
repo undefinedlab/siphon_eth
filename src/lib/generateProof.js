@@ -93,7 +93,7 @@ export async function generateWithdrawalProof(withdrawalData) {
       ZKEY_PATH
     );
 
-    console.log("Proof generated successfully!");
+    console.log("Proof generated successfully!:", proof);
     console.log("Public signals:", publicSignals);
 
     return {
