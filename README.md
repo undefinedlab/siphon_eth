@@ -2,11 +2,13 @@
 
 # 🔒 Siphon Protocol
 
-> **Trade in Total Darkness: FHE & ZK for Unmatched Privacy**
-
 [![Next.js](https://img.shields.io/badge/Next.js-14-black?style=for-the-badge&logo=next.js)](https://nextjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/)
 [![Three.js](https://img.shields.io/badge/Three.js-0.180-green?style=for-the-badge&logo=three.js)](https://threejs.org/)
+[![Rust](https://img.shields.io/badge/Rust-1.70-orange?style=for-the-badge&logo=rust)](https://www.rust-lang.org/)
+[![Solidity](https://img.shields.io/badge/Solidity-0.8.20-black?style=for-the-badge&logo=solidity)](https://soliditylang.org/)
+[![Citcom](https://img.shields.io/badge/Citcom-latest-blue?style=for-the-badge)](https://github.com/citcomsuite/citcoms)
+[![Python](https://img.shields.io/badge/Python-3.11-blue?style=for-the-badge&logo=python)](https://www.python.org/)
 [![License](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)](LICENSE)
 
 **Enabling untraceable, hyperliquid and institutional-grade DeFi privacy with Fully Homomorphic Encryption and Zero-Knowledge proofs.**
@@ -26,40 +28,37 @@
 <tr>
 <td width="33%">
 
+
 #### 🔍 **Wallets Are Tracked**
-- Chain analytics expose identity and transaction history
-- Every transfer is tracked and potentially reported
-- PnL and strategies are visible to competitors
-- Successful strategies are immediately copied
+- **Every transaction** exposes your entire financial history
+- **Portfolio strategies** are visible to competitors and regulators
+- **Institutional traders** cannot operate with confidentiality
 
 </td>
 <td width="33%">
 
-#### 🤖 **Execution Becomes Predictable**
-- Order intent leaks before confirmation
-- Bots pre-position against large orders
-- Visible flow widens quotes and worsens fills
-- Settlement windows invite MEV extraction
+#### 🤖 **Value is Extracted**
+- **Order intent** leaks milliseconds before execution
+- **Visible flow**  widens quotes and worsens fills.
+- **Sniping and MEV**  extraction destroys profitability.
 
 </td>
 <td width="33%">
 
-#### 💰 **Privacy Forces Liquidity Trade-offs**
-- Private venues are underfunded with size limits
-- Moving between privacy islands is slow and costly
-- Users must choose: privacy or best price
-- Institutions cannot operate at scale without confidentiality
+#### 💰 **The Privacy-Liquidity Dilemma**
+- **Privacy coins** (ZEC, XMR) lack DeFi integration
+- **Dark pools** are fragmented and underutilized
+- **Users forced** to choose: privacy OR best execution
 
 </td>
 </tr>
 </table>
 
-### 📊 Market Impact:
-- **$27B** extracted in 2024 via MEV
-- **$280M** lost monthly to front-running on DEXs
-- **53%** of financial executives cite privacy as a key barrier to blockchain adoption
+### 📊 Market Reality
+- **$280M** lost monthly to front-running attacks on DEXs 
+- **$12B** in privacy coin market cap lacks DeFi integration
+- **Zero** truly private DEXs with easy access to global liquidity
 
-> **This is not autonomy. It is transparency as a tool of control.**
 
 ---
 
@@ -69,10 +68,7 @@
 
 ### 🌉 **The Privacy Bridge**
 
-**Siphon connects public and private capital from different chains with the most liquid DeFi opportunities across an omnichain landscape of possibilities.**
-
-**All executed privately, with cheaper transaction prices.**
-
+**Siphon serves as the seamless privacy-preserving gateway between public and private capital, facilitating secure, private and verifiable movement of assets across multiple blockchains. By enabling frictionless access to the deepest, most liquid DeFi opportunities in a true omnichain environment, Siphon empowers institutions and individuals alike to transact and deploy strategies at scale—without sacrificing confidentiality, competitive edge, or market efficiency.**
 </div>
 
 ### ✨ Key Features:
@@ -84,12 +80,10 @@
 #### 🔒 **Complete Privacy**
 - Portfolio, PnL, and strategies are no longer visible on-chain
 - Encrypted state management
-- Zero-knowledge balance proofs
 
 #### ⚡ **No Front-running**
 - Eliminates order sniffing and MEV extraction
 - Private transaction routing
-- Advanced MEV protection techniques
 
 </td>
 <td width="50%">
@@ -97,16 +91,17 @@
 #### 💰 **Better Pricing**
 - Cheaper transaction prices through optimized execution
 - Reduced slippage through privacy-preserving routing
-- Institutional-grade execution
 
 #### 🌐 **Omnichain**
 - Hyperliquid execution across multiple chains
 - Privacy preserved end-to-end
-- Seamless cross-chain operations
 
 </td>
 </tr>
 </table>
+
+<img src="https://github.com/undefinedlab/siphon_eth/blob/master/docs/4.png" alt="Siphon Architecture Diagram" width="100%" />
+
 
 ---
 
@@ -133,15 +128,102 @@ Cryptographic assurance without revealing data
 <td width="25%" align="center">
 
 #### 🌉 **Avail Nexus SDK**
-**Cross-Chain Operations**
+**Cross-Chain Operations**  
 Seamless multi-chain execution
-</td>
 
+</td>
+<td width="25%" align="center">
+
+#### 📈 **Pyth Network**
+**Price Feeds & Randomness**  
+Reliable price oracles and random number generation
+
+</td>
+<td width="25%" align="center">
+
+#### 🛠️ **Hardhat**
+**Deployment Tool**  
+Flexible, developer-friendly smart contract deployment
+
+</td>
 </tr>
 </table>
 
-##
-More about [Avail Nexus SDK](https://github.com/undefinedlab/siphon_eth/blob/master/docs/AvailReadme.md)
+
+### The Five-Layer Architecture:
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│ Layer 5: Liquidity Interface                                │
+│ - Public DEX aggregators                                     │
+│ - Cross-chain bridges                                        │
+│ - Modular design for privacy-native assets                   │
+└─────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────┐
+│ Layer 4: Verification & Settlement                          │
+│ - ZK proof of correct execution                             │
+│ - On-chain verification                                      │
+│ - Cryptographic guarantees                                    │
+└─────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────┐
+│ Layer 3: Confidential Execution Environment (FHE Engine)    │
+│ - Encrypted mempool                                          │
+│ - Computation on encrypted data                              │
+│ - Order matching & slippage calculation                      │
+└─────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────┐
+│ Layer 2: Shielded Pool                                       │
+│ - Incremental Merkle trees                                   │
+│ - Zero-knowledge membership proofs                           │
+│ - Nullifier system for double-spend prevention               │
+└─────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────┐
+│ Layer 1: Vault Contract                                      │
+│ - Trustless escrow for public assets                         │
+│ - ETH, USDC, WBTC and more                                   │
+│ - Release on valid ZK proof verification                     │
+└─────────────────────────────────────────────────────────────┘
+```
+
+## 📁 Project Structure
+```
+siphon/
+├── 📂 circuits/              # ZK-SNARK circuits for private proofs
+│
+├── 📂 contracts/             # Solidity smart contracts for on-chain logic
+
+├── 📂 docs/                  # Documentation
+
+├── 📂 packages/              # Reusable cryptographic and utility packages
+│   ├── fhe-lib/
+│   ├── zk-proofs/
+│   └── crypto-utils/
+│
+├── 📂 public/                # Static assets
+
+├── 📂 src/                   # Application source code
+│   ├── 📂 app/              # Next.js 14 App Router pages and API routes
+│   ├── 📂 components/       # Reusable React components
+│   │   ├── ui/
+│   │   ├── trading/
+│   │   └── wallet/
+│   │
+│   ├── 📂 lib/              # Core FHE and ZK proof implementations
+│   │   ├── fhe/
+│   │   ├── zk/
+│   │   └── blockchain/
+│   │
+│   ├── 📂 hooks/            # React hooks
+│   ├── 📂 utils/            # Utility functions
+│   └── 📂 types/            # TypeScript types
+│
+├── 📄 README.md
+
+
+```
+
+
+
 
 ## 🚀 Quick Start
 
