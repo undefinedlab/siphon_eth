@@ -132,16 +132,16 @@ Cryptographic assurance without revealing data
 </td>
 <td width="25%" align="center">
 
-#### 🌉 **Atomic Swaps**
+#### 🌉 **Avail Nexus SDK**
 **Cross-Chain Operations**
 Seamless multi-chain execution
-
 </td>
 
 </tr>
 </table>
 
-
+##
+More about [Avail Nexus SDK](https://github.com/undefinedlab/siphon_eth/blob/master/docs/AvailReadme.md)
 
 ## 🚀 Quick Start
 
