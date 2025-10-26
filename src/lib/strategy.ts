@@ -1,4 +1,4 @@
-export async function createStrategy(strategyData: any) {
+export async function createStrategy(strategyData: unknown) {
   try {
     const response = await fetch("http://localhost:5003/generatePayload", {
       method: "POST",

@@ -211,9 +211,9 @@ export async function deposit(_srcChainName: string, _token: string, _amount: st
             };
         }
         return { success: false, error: bridge.error };
-    } catch (e: any) {
-        console.error("Error during deposit:", e);
-        return { success: false, error: e.message };
+    } catch (error: unknown) {
+        console.error("Error during deposit:", error);
+        return { success: false, error: error };
     }
 }
 
@@ -297,7 +297,7 @@ export async function withdraw(_chain: string, _token: string, _amount: string, 
 
     // Generate the Merkle proof using the index (convert BigInt to number)
     const proof = leanIMT.generateProof(Number(leafIndex));
-    let pathElements = proof.siblings;
+    const pathElements = proof.siblings;
 
     // Generate pathIndices array - each index indicates if sibling is on left (0) or right (1)
     const pathIndices = [];
