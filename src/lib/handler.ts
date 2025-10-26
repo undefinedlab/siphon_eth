@@ -9,7 +9,8 @@ export const sdk = getNexusSDK();
 
 const VAULT_CHAIN_ID = 11155111  // Vault contract is located in ETH Sepolia
 const NATIVE_TOKEN = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE";
-const ENTRYPOINT_ADDRESS = '0x43440e22471EcF16aB981ea7A4682FD8D1f4F017';
+const ENTRYPOINT_ADDRESS = '0x9A1909525Fb2810b87Fa370015d1cd6b2F5F8fcc';
+
 
 // Helper function to encode proof array to bytes
 function encodeProof(proofArray: string[]): `0x${string}` {
