@@ -226,7 +226,7 @@ export async function withdraw(_chain: string, _token: string, _amount: string, 
         const key = localStorage.key(i);
         if (key && key.startsWith(`${chain.id}-${token.symbol}-`)) {
             const depositData = JSON.parse(localStorage.getItem(key) || '{}');
-            if (depositData.commitment) {
+            if (depositData.commitment && !depositData.spent) { // UPDATED: added !depositData.spent so it fails here itself and avoid gas waste by failing on smart contract check 
                 storedDeposit = depositData;
                 break;
             }
@@ -404,6 +404,31 @@ export async function withdraw(_chain: string, _token: string, _amount: string, 
     });
 
     if (result) {
+        //UPDATED: store new commitment if remaining_balance > 0
+        if (changeValue > 0n) {
+            const newDepositId = `${VAULT_CHAIN_ID}-${token.symbol}-${newCommitment.toString()}`;
+            localStorage.setItem(newDepositId, JSON.stringify({
+                secret: newSecret.toString(),
+                nullifier: newNullifier.toString(),
+                precommitment: newCommitment.toString(),
+                commitment: newCommitment.toString(),
+                amount: sdk.utils.formatUnits(changeValue, token.decimals)
+            }));
+        }
+        //UPDATED: Add a spent flag to the spent commitments for check at time of withdrawal 
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            if (key) {
+                const depositData = JSON.parse(localStorage.getItem(key) || '{}');
+                if (depositData.commitment && BigInt(depositData.commitment) === existingCommitment) {
+                    localStorage.setItem(key, JSON.stringify({
+                        ...depositData,
+                        spent: true
+                    }));
+                    break;
+                }
+            }
+        }
         return { success: true, transactionHash: result.transactionHash };
     } else
         return { success: false, transactionHash: undefined };
