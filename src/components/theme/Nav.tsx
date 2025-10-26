@@ -24,10 +24,12 @@ export default function Nav() {
         <div className="nav-items">
 
         
+  <p>
   <a href="https://github.com/undefinedlab/siphon_eth" target="_blank" rel="noopener noreferrer">
     docs
   </a>
-</p>  <p>
+</p>
+<p>
   <a href="https://github.com/undefinedlab/siphon_eth" target="_blank" rel="noopener noreferrer">
     about
   </a>
