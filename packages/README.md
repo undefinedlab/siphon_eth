@@ -3,7 +3,7 @@ Here is where Siphon Protocol's on-chain and off-chain backend system resides
 
 ## 📁 Package Structure
 ```
-siphon/
+packages/
 ├── 📂 circuits/                        # SnarkJS-based ZK Circuit
 │
 ├── 📂 contracts/                       # Contract source code & configuration
