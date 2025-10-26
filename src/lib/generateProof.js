@@ -1,9 +1,10 @@
 // prepareWithdrawalTransaction function orchestrates the entire process, generating the proof > converting it to calldata, and packaging it with recipient, amount and hashes for submission to the contract
 
 import { buildPoseidon } from "circomlibjs";
-import { snarkjs } from "snarkjs";
 const WASM_PATH = '/zk/main_js/main.wasm';
 const ZKEY_PATH = '/zk/circuit.zkey';
+
+const snarkjs = require('snarkjs');
 
 /**
  * Generate ZK proof for withdrawal
