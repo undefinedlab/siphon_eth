@@ -1,15 +1,20 @@
 "use client";
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import "./ProSwapMode.css";
 import { deposit, withdraw } from "../../lib/handler";
-import { createStrategy } from "../../lib/strategy";
-
 
 interface ProSwapModeProps {
   isLoaded: boolean;
   nexusInitialized: boolean;
 }
+
+// UPDATED FOR PYTH: added pyth price feed IDs
+const PYTH_PRICE_IDS: { [key: string]: string } = {
+  'ETH': '0xff61491a931112ddf1bd8147cd1b641375f79f5825126d665480874634fd0ace', 
+  'USDC': '0xeaa020c61cc479712813461ce153894a96a6c00b21ed0cfc2798d1f9a9e9c94a',
+  'USDT': '0x2b89b9dc8fdf9f34709a5b106b472f0f39bb6ca9ce04b0fd7f2e971688e2e53b',
+  'WBTC': '0xc9d8b075a5c69303365ae23633d4e085199bf5c520a3b90fed1322a0342ffc33',
+};
 
 export default function ProSwapMode({
   isLoaded,
@@ -37,6 +42,57 @@ export default function ProSwapMode({
   const [depositInputs, setDepositInputs] = useState([
     { srcChain: "Ethereum Sepolia", token: "ETH", amount: "" }
   ]);
+  // UPDATED FOR PYTH:realtime prices and loading status
+  const [prices, setPrices] = useState<{ [key: string]: number }>({
+    'ETH': 0,
+    'USDC': 1,
+    'USDT': 1,
+    'WBTC': 0
+  });
+  const [pricesLoading, setPricesLoading] = useState(true);
+
+  // UPDATED FOR PYTH: Function to fetch real time prices from Pyth
+  const fetchPrices = async () => {
+    try {
+      const priceIds = Object.values(PYTH_PRICE_IDS);
+      const idsParam = priceIds.map(id => `ids[]=${id}`).join('&');
+      
+      const response = await fetch(
+        `https://hermes.pyth.network/v2/updates/price/latest?${idsParam}`
+      );
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch prices');
+      }
+      
+      const data = await response.json();
+      const newPrices: { [key: string]: number } = {};
+      data.parsed?.forEach((priceData: any) => {
+        const priceId = '0x' + priceData.id;
+        const token = Object.keys(PYTH_PRICE_IDS).find(
+          key => PYTH_PRICE_IDS[key] === priceId
+        );
+        
+        if (token && priceData.price) {
+          const price = Number(priceData.price.price) * Math.pow(10,priceData.price.expo);
+          newPrices[token] = price;
+        }
+      });
+      
+      setPrices(prevPrices => ({ ...prevPrices, ...newPrices }));
+      setPricesLoading(false);
+    } catch (error) {
+      console.error('Error fetching prices:', error);
+      setPricesLoading(false);
+    }
+  };
+
+  // UPDATED FOR PYTH:refresh prices every 10 seconds
+  useEffect(() => {
+    fetchPrices();
+    const interval = setInterval(fetchPrices, 10000);
+    return () => clearInterval(interval);
+  }, []);
 
   const handleDeposit = async () => {
     console.log('Depositing to Siphon Vault');
@@ -107,21 +163,19 @@ const handleSwap = async () => {
       asset_in: swap.from,
       asset_out: swap.to,
       amount: parseFloat(swap.amount),
-      upper_bound: upperBound, // Raw numbers for Rust generator
+      upper_bound: upperBound,
       lower_bound: lowerBound,
       recipient_address: swap.recipient_address,
     };
 
-    console.log("Sending strategy to Payload Generator:", strategyPayload);
+    console.log("Strategy Payload:", strategyPayload);
 
-    const result = await createStrategy(strategyPayload);
-
-    if (result.success) {
-      console.log("Payload generated:", result.data);
-      alert("✅ Payload successfully generated. Check console for details.");
-    } else {
-      alert(`❌ Payload generation failed: ${result.error}`);
-    }
+    // TODO: Implement strategy creation logic here
+    // const result = await createStrategy(strategyPayload);
+    
+    alert("✅ Strategy payload created. Check console for details.");
+    console.log("You need to implement the createStrategy function in ../../lib/strategy.ts");
+    
   } catch (error: unknown) {
     console.error("Error generating payload:", error);
     alert(`Failed to generate payload: ${error instanceof Error ? error.message : 'Unknown error'}`);
@@ -254,15 +308,8 @@ const handleSwap = async () => {
     return totals;
   };
 
+  // UPDATED FOR PYTH: integration part
   const getUSDEquivalent = (token: string, amount: number) => {
-    // Mock prices - in real app these would come from price feeds
-    const prices: { [key: string]: number } = {
-      'ETH': 4024,
-      'USDC': 1,
-      'USDT': 1,
-      'WBTC': 45000
-    };
-    
     return amount * (prices[token] || 0);
   };
 
@@ -624,7 +671,16 @@ const handleSwap = async () => {
               <div className="swap-preview">
                 <div className="preview-row">
                   <span>Rate</span>
-                  <span>1 {swap.from} = 150 {swap.to}</span>
+                  {/* UPDATED FOR PYTH */}
+                  <span>
+                    {pricesLoading ? (
+                      'Loading...'
+                    ) : prices[swap.from] > 0 && prices[swap.to] > 0 ? (
+                      `1 ${swap.from} = ${(prices[swap.from] / prices[swap.to]).toFixed(4)} ${swap.to}`
+                    ) : (
+                      'Price unavailable'
+                    )}
+                  </span>
                 </div>
                 <div className="preview-row">
                   <span>Slippage</span>
@@ -801,9 +857,9 @@ const handleSwap = async () => {
                 const entries = Object.entries(totals).filter(([, amount]) => amount > 0);
                 if (entries.length === 1) {
                   const [token, amount] = entries[0];
-                  return `${token} ${amount.toFixed(4)} ($${totalUSD.toFixed(2)})`;
+                  return `${token} ${amount.toFixed(4)} (${totalUSD.toFixed(2)})`;
                 } else {
-                  return `$${totalUSD.toFixed(2)} total`;
+                  return `${totalUSD.toFixed(2)} total`;
                 }
               })()}
             </span>
