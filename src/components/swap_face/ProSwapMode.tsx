@@ -2,6 +2,8 @@
 import { useState, useEffect } from "react";
 import "./ProSwapMode.css";
 import { deposit, withdraw } from "../../lib/handler";
+import { createStrategy } from "../../lib/strategy";
+import { instantSwap } from "../../lib/swap";
 
 interface ProSwapModeProps {
   isLoaded: boolean;
@@ -138,49 +140,57 @@ export default function ProSwapMode({
     }
   };
 
-const handleSwap = async () => {
-  console.log('Executing Pro Strategy', swaps);
+  const handleSwap = async () => {
+    console.log('Executing Pro Strategy', swaps);
 
-  if (!nexusInitialized) {
-    alert('Please connect wallet first');
-    return;
-  }
+    if (!nexusInitialized) {
+      alert('Please connect wallet first');
+      return;
+    }
 
-  const swap = swaps[0];
+    const swap = swaps[0];
 
-  if (!swap.amount || parseFloat(swap.amount) <= 0) {
-    alert('Please enter a valid amount');
-    return;
-  }
+    if (!swap.amount || parseFloat(swap.amount) <= 0) {
+      alert('Please enter a valid amount');
+      return;
+    }
 
-  try {
-    const upperBound = parseFloat(swap.stopGain) || 0;
-    const lowerBound = parseFloat(swap.stopLoss) || 0;
+    try {
+      const upperBound = parseFloat(swap.stopGain) || 0;
+      const lowerBound = parseFloat(swap.stopLoss) || 0;
 
-    const strategyPayload = {
-      user_id: "user123", // Replace with actual wallet/JWT user ID
-      strategy_type: "BRACKET_ORDER_LONG",
-      asset_in: swap.from,
-      asset_out: swap.to,
-      amount: parseFloat(swap.amount),
-      upper_bound: upperBound,
-      lower_bound: lowerBound,
-      recipient_address: swap.recipient_address,
-    };
+      let result;
+      if (upperBound <= 0 && lowerBound <= 0) {
+        console.log("Executing instant swap to vault contract");
+        result = await instantSwap(swap.from, swap.to, swap.amount, swap.recipient_address);
+      } else {
+        const strategyPayload = {
+          user_id: "user123", // Replace with actual wallet/JWT user ID
+          strategy_type: "BRACKET_ORDER_LONG",
+          asset_in: swap.from,
+          asset_out: swap.to,
+          amount: parseFloat(swap.amount),
+          upper_bound: upperBound, // Raw numbers for Rust generator
+          lower_bound: lowerBound,
+          recipient_address: swap.recipient_address,
+        };
 
-    console.log("Strategy Payload:", strategyPayload);
+        console.log("Sending strategy to Payload Generator:", strategyPayload);
 
-    // TODO: Implement strategy creation logic here
-    // const result = await createStrategy(strategyPayload);
-    
-    alert("✅ Strategy payload created. Check console for details.");
-    console.log("You need to implement the createStrategy function in ../../lib/strategy.ts");
-    
-  } catch (error: unknown) {
-    console.error("Error generating payload:", error);
-    alert(`Failed to generate payload: ${error instanceof Error ? error.message : 'Unknown error'}`);
-  }
-};
+        result = await createStrategy(strategyPayload);
+      }
+
+      if (result.success) {
+        console.log("Payload generated:", result.data);
+        alert("✅ Transaction successfully generated. Check console for details.");
+      } else {
+        alert(`❌ Transaction generation failed: ${result.error}`);
+      }
+    } catch (error: unknown) {
+      console.error("Error generating payload:", error);
+      alert(`Failed to generate payload: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  };
 
   const handleWithdraw = async () => {
     console.log('Withdrawing from Siphon Vault');
