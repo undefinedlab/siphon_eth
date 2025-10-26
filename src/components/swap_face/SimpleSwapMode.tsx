@@ -8,6 +8,14 @@ import ToTokenSelector from "./elements/ToTokenSelector";
 import { transferTokens, getUnifiedBalances, initializeWithProvider } from "../../lib/nexus";
 import { WalletInfo } from "../../lib/walletManager";
 
+const PYTH_PRICE_IDS: { [key: string]: string } = {
+  'ETH': '0xff61491a931112ddf1bd8147cd1b641375f79f5825126d665480874634fd0ace', 
+  'USDC': '0xeaa020c61cc479712813461ce153894a96a6c00b21ed0cfc2798d1f9a9e9c94a',
+  'USDT': '0x2b89b9dc8fdf9f34709a5b106b472f0f39bb6ca9ce04b0fd7f2e971688e2e53b',
+  'WBTC': '0xc9d8b075a5c69303365ae23633d4e085199bf5c520a3b90fed1322a0342ffc33',
+  'SOL': '0xef0d8b6fda2ceba41da15d4095d1da392a0d2f8ed0c6c7bc0f4cfac8c280b56d',
+};
+
 interface SimpleSwapModeProps {
   isLoaded: boolean;
   unifiedBalances: Array<{
@@ -66,8 +74,78 @@ export default function SimpleSwapMode({
   const [swapFromToken, setSwapFromToken] = useState("");
   const [swapToToken, setSwapToToken] = useState("USDC");
   const [swapAmount, setSwapAmount] = useState("");
+  const [swapToAmount, setSwapToAmount] = useState("");
   const [withdrawAddress, setWithdrawAddress] = useState("");
   const [isTransferring, setIsTransferring] = useState(false);
+  
+  // CHANGED FOR PYTH
+  const [prices, setPrices] = useState<{ [key: string]: number }>({
+    'ETH': 0,
+    'USDC': 1,
+    'USDT': 1,
+    'WBTC': 0,
+    'SOL': 0
+  });
+  const [pricesLoading, setPricesLoading] = useState(true);
+
+  // CHANGED FOR PYTH: fetching real time prices from Pyth
+  const fetchPrices = async () => {
+    try {
+      const priceIds = Object.values(PYTH_PRICE_IDS);
+      const idsParam = priceIds.map(id => `ids[]=${id}`).join('&');
+      
+      const response = await fetch(
+        `https://hermes.pyth.network/v2/updates/price/latest?${idsParam}`
+      );
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch prices');
+      }
+      
+      const data = await response.json();
+      const newPrices: { [key: string]: number } = {};
+      data.parsed?.forEach((priceData: any) => {
+        const priceId = '0x' + priceData.id;
+        const token = Object.keys(PYTH_PRICE_IDS).find(
+          key => PYTH_PRICE_IDS[key] === priceId
+        );
+        
+        if (token && priceData.price) {
+          const price = Number(priceData.price.price) * Math.pow(10, priceData.price.expo);
+          newPrices[token] = price;
+        }
+      });
+      
+      setPrices(prevPrices => ({ ...prevPrices, ...newPrices }));
+      setPricesLoading(false);
+    } catch (error) {
+      console.error('Error fetching prices:', error);
+      setPricesLoading(false);
+    }
+  };
+
+  // CHANGED FOR PYTH: refresh prices every 10 seconds
+  useEffect(() => {
+    fetchPrices();
+    const interval = setInterval(fetchPrices, 10000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Calculate conversion when amount or tokens change
+  useEffect(() => {
+    if (swapAmount && !pricesLoading) {
+      const fromToken = swapFromToken ? swapFromToken.split('-')[0] : 'SOL';
+      const toToken = swapToToken;
+      
+      if (prices[fromToken] > 0 && prices[toToken] > 0) {
+        const rate = prices[fromToken] / prices[toToken];
+        const converted = parseFloat(swapAmount) * rate;
+        setSwapToAmount(converted.toFixed(6));
+      }
+    } else if (!swapAmount) {
+      setSwapToAmount("");
+    }
+  }, [swapAmount, swapFromToken, swapToToken, prices, pricesLoading]);
 
   const handleSwap = async () => {
     console.log('handleSwap called');
@@ -139,6 +217,7 @@ export default function SimpleSwapMode({
           
           // Clear the form after successful transfer
           setSwapAmount('');
+          setSwapToAmount('');
           setSwapFromToken('');
           setWithdrawAddress('');
         } catch (refreshError: unknown) {
@@ -253,6 +332,7 @@ export default function SimpleSwapMode({
           <input
             type="number"
             placeholder="0.0"
+            value={swapToAmount}
             readOnly
           />
           <div className="token-selector">
@@ -280,7 +360,21 @@ export default function SimpleSwapMode({
       <div className="swap-info">
         <div className="info-row">
           <span>Rate</span>
-          <span>1 SOL = 150 USDC</span>
+          {/* CHANGED FOR PYTH */}
+          <span>
+            {pricesLoading ? (
+              'Loading...'
+            ) : (() => {
+              const fromToken = swapFromToken ? swapFromToken.split('-')[0] : 'SOL';
+              const toToken = swapToToken;
+              
+              if (prices[fromToken] > 0 && prices[toToken] > 0) {
+                const rate = prices[fromToken] / prices[toToken];
+                return `1 ${fromToken} = ${rate.toFixed(4)} ${toToken}`;
+              }
+              return '1 SOL = 150 USDC';
+            })()}
+          </span>
         </div>
         <div className="info-row">
           <span>Slippage</span>
