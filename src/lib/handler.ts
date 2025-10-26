@@ -187,7 +187,19 @@ export async function withdraw(_chain: string, _token: string, _amount: string, 
     const tokenAddress = (token.symbol == 'ETH') ? NATIVE_TOKEN : token.contractAddress;
 
     const zkData = await generateZKData(VAULT_CHAIN_ID, token, _amount, _recipient);
-    const withdrawalTxData = zkData.withdrawalTxData;
+
+    if ('error' in zkData) {
+        return { success: false, error: zkData.error };
+    }
+
+    const withdrawalTxData = zkData.withdrawalTxData as {
+        recipient: string;
+        amount: string;
+        nullifierHash: string;
+        newCommitment: string;
+        proof: string[];
+        publicSignals: string[];
+    };
 
     if ('error' in zkData) {
         return { success: false, error: zkData.error };
@@ -263,7 +275,9 @@ export async function withdraw(_chain: string, _token: string, _amount: string, 
         }
 
         // Mark spent deposit
-        localStorage.setItem(zkData.spentDepositKey, JSON.stringify({...zkData.spentDeposit, spent: true}));
+        if (zkData.spentDepositKey) {
+            localStorage.setItem(zkData.spentDepositKey, JSON.stringify({...zkData.spentDeposit, spent: true}));
+        }
         return { success: true, transactionHash: result.transactionHash };
     } else 
         return { success: false, transactionHash: undefined };
