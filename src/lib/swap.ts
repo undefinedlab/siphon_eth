@@ -42,7 +42,19 @@ export async function instantSwap(_srcToken: string, _dstToken: string, _amount:
     try {
         // Process ZK Data
         const zkData = await generateZKData(VAULT_CHAIN_ID, srcToken, _amount, _recipient);
-        const withdrawalTxData = zkData.withdrawalTxData;
+
+        if ('error' in zkData) {
+            return { success: false, error: zkData.error };
+        }
+
+        const withdrawalTxData = zkData.withdrawalTxData as {
+            recipient: string;
+            amount: string;
+            nullifierHash: string;
+            newCommitment: string;
+            proof: string[];
+            publicSignals: string[];
+        };
 
         const result = await sdk.execute({
             toChainId: chain.id as SUPPORTED_CHAINS_IDS,
@@ -125,7 +137,9 @@ export async function instantSwap(_srcToken: string, _dstToken: string, _amount:
             }
 
             // Mark spent deposit
-            localStorage.setItem(zkData.spentDepositKey, JSON.stringify({...zkData.spentDeposit, spent: true}));
+            if (zkData.spentDepositKey) {
+                localStorage.setItem(zkData.spentDepositKey, JSON.stringify({...zkData.spentDeposit, spent: true}));
+            }
             
             return { success: true, data: result.transactionHash };
         }

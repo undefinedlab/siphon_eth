@@ -84,7 +84,7 @@ export async function generateZKData(_chainId: number, _token: TokenInfo, _amoun
 
     // Build a local Merkle tree
     const leanIMT = new LeanIMT((a, b) => {
-        return poseidon([a, b]);
+        return F.toObject(poseidon([a, b]));
     });
     for (const c of commitments) {
         leanIMT.insert(c);
@@ -132,7 +132,14 @@ export async function generateZKData(_chainId: number, _token: TokenInfo, _amoun
         pathElements: pathElements,
         pathIndices: pathIndices,
         recipient: _recipient,
-    });
+    }) as {
+        recipient: string;
+        amount: string;
+        nullifierHash: string;
+        newCommitment: string;
+        proof: string[];
+        publicSignals: string[];
+    };
 
     // Check formats
     console.log("withdrawalTxData:", {

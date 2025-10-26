@@ -111,7 +111,6 @@ export default function SimpleSwapMode({
           expo: number;
         };
       }
-
       data.parsed?.forEach((priceData: PriceData) => {
         const priceId = '0x' + priceData.id;
         const token = Object.keys(PYTH_PRICE_IDS).find(
