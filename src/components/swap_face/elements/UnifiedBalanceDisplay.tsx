@@ -30,9 +30,6 @@ export default function UnifiedBalanceDisplay({ balances }: { balances: UnifiedB
     );
   }
 
-  // Debug: Log the actual structure of balances
-  console.log('Unified balances structure:', balances);
-
   // Handle the actual Nexus SDK balance structure
   let tokenBalances: UnifiedBalance[] = [];
   
@@ -142,10 +139,7 @@ export default function UnifiedBalanceDisplay({ balances }: { balances: UnifiedB
                   contractAddress?: `0x${string}`;
                   decimals?: number;
                   isNative?: boolean;
-                }, index: number) => {
-                  // Debug: Log the chain balance structure
-                  console.log(`Chain balance ${index}:`, chainBalance);
-                  
+                }, index: number) => {                  
                   // Extract chain name from nested chain object
                   const chainName = chainBalance.chain.name || chainBalance.chain.id.toString() || 'Unknown';
                   const chainAmount = parseFloat(chainBalance?.balance || '0');

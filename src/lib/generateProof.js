@@ -1,13 +1,10 @@
-// ZK proof generation for withdrawal - need to decide location in overall project structure
 // prepareWithdrawalTransaction function orchestrates the entire process, generating the proof > converting it to calldata, and packaging it with recipient, amount and hashes for submission to the contract
 
 import { buildPoseidon } from "circomlibjs";
 const WASM_PATH = '/zk/main_js/main.wasm';
 const ZKEY_PATH = '/zk/circuit.zkey';
 
-// dependency > snarkjs
-const snarkjs = require('snarkjs');
-
+import * as snarkjs from 'snarkjs';
 /**
  * Generate ZK proof for withdrawal
  * @param {Object} withdrawalData - The withdrawal parameters
@@ -93,7 +90,7 @@ export async function generateWithdrawalProof(withdrawalData) {
       ZKEY_PATH
     );
 
-    console.log("Proof generated successfully!");
+    console.log("Proof generated successfully!:", proof);
     console.log("Public signals:", publicSignals);
 
     return {

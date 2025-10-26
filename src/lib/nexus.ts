@@ -1,5 +1,4 @@
 import { NexusSDK, SUPPORTED_TOKENS, SUPPORTED_CHAINS_IDS, EthereumProvider, NexusNetwork } from '@avail-project/nexus-core';
-import { parseUnits } from 'ethers';
 
 // Declare SDK singleton variable
 const sdk = new NexusSDK({ 
