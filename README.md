@@ -43,8 +43,8 @@
 </td>
 <td width="33%">
 
-#### 💰 **The Privacy-Liquidity Dilemma**
-- **Privacy coins** (ZEC, XMR) lack DeFi integration
+#### 💰 **Liquidity is Siloed**
+- **Privacy coins** and pools lack DeFi integration
 - **Users forced** to choose: privacy OR best execution
 
 </td>
