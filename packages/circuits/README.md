@@ -57,14 +57,33 @@ It outputs the `root` of the Merkle tree.
 
 ## Dependencies
 
-The circuits depend on the following libraries:
-
 -   [circomlib](https://github.com/iden3/circomlib)
 -   [circomlibjs](https://github.com/iden3/circomlibjs)
 -   [snarkjs](https://github.com/iden3/snarkjs)
 
+## Setup
+
+1.  **Install Dependencies**:
+    ```bash
+    npm install
+    ```
+
+2.  **Compile the Circuits**:
+    The following command will compile the `main.circom` file and create the `main.r1cs` and `main.wasm` files.
+    ```bash
+    circom main.circom --r1cs --wasm --output build
+    ```
+
+3.  **Generate the `circuit.zkey` file**:
+    The `circuit.zkey` file is a proving key that is used to generate proofs. It is generated from the `.r1cs` file and a powers of tau file. You will need to download a appropriate powers of tau file depending upon number of constraints.
+    Once you have a powers of tau file, you can generate the `circuit.zkey` file with the following command:
+    ```bash
+    snarkjs plonk setup build/main.r1cs powersOfTau.ptau circuit.zkey
+    ```
+    **Note**: The `circuit.zkey` file is not included in this repository because it is a large file (~70mb)
+
 ## Usage
 
-To use the circuits, you need to compile them to a format that can be used by a ZK-Snark proving system.
+Once you have compiled the circuits and generated the `circuit.zkey` file, you can use `snarkjs` to generate proofs. 
 
-Build instructions are not available at the moment. Please refer to the [snarkjs documentation](https://github.com/iden3/snarkjs) for instructions on how to compile the circuits and generate proofs.
+Please refer to the [snarkjs documentation](https://github.com/iden3/snarkjs) for instructions on how to generate proofs.
