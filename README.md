@@ -103,58 +103,53 @@
 ## 🛠️ Technical Architecture
 
 ### 🔧 Core Technologies
-
 <table>
   <tr>
     <td width="33%" align="center">
 
-#### 🔐 **FHE**
+#### 🔐 **FHE**  
 **Fully Homomorphic Encryption**  
 Enables computation on encrypted data
 
   </td>
     <td width="33%" align="center">
 
-#### 🎭 **ZK Proofs**
+#### 🎭 **ZK Proofs**  
 **Zero-Knowledge Proofs**  
 Proves correctness—no data revealed
 
   </td>
     <td width="33%" align="center">
 
-#### 🌉 **Avail Nexus SDK**
+#### 🌉 **Avail Nexus SDK**  
 **Cross-Chain Operations**  
 Seamless multi-chain execution
 
   </td>
   </tr>
+
   <tr>
     <td width="33%" align="center">
 
-#### 📈 **Pyth Network**
+#### 📈 **Pyth Network**  
 **Price Feeds & Randomness**  
 Reliable oracles and entropy
 
   </td>
     <td width="33%" align="center">
 
-#### 🛠️ **Hardhat**
+#### 🛠️ **Hardhat**  
 **Deployment Tool**  
 Flexible, developer-friendly smart contract deployment
 
   </td>
     <td width="33%" align="center">
-    </td>
 
-    <td width="33%" align="center">
-
-#### ⚙️ **EVM**
+#### ⚙️ **EVM**  
 **Execution & Settlement Layer**  
 Secure, composable, and EVM-compatible foundation for DeFi
 
   </td>
-    <td width="33%" align="center">
-    </td>
   </tr>
 </table>
 
