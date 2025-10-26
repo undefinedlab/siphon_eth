@@ -104,7 +104,15 @@ export default function SimpleSwapMode({
       
       const data = await response.json();
       const newPrices: { [key: string]: number } = {};
-      data.parsed?.forEach((priceData: any) => {
+      interface PriceData {
+        id: string;
+        price: {
+          price: string;
+          expo: number;
+        };
+      }
+
+      data.parsed?.forEach((priceData: PriceData) => {
         const priceId = '0x' + priceData.id;
         const token = Object.keys(PYTH_PRICE_IDS).find(
           key => PYTH_PRICE_IDS[key] === priceId
