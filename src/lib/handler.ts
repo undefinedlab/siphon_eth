@@ -87,7 +87,7 @@ export async function deposit(_srcChainName: string, _token: string, _amount: st
             } else {
                 // Set token allowance for Nexus router & entrypoint contracts
                 await sdk.setAllowance(VAULT_CHAIN_ID, [token.symbol], BigInt(decAmount));
-                const allowance = await sdk.execute({
+                await sdk.execute({
                     toChainId: VAULT_CHAIN_ID,
                     contractAddress: token.contractAddress,
                     contractAbi: [{
@@ -107,10 +107,7 @@ export async function deposit(_srcChainName: string, _token: string, _amount: st
                 });
 
                 // Wait for approve transaction to finish
-                for (let i = 0; i < 15; i++) {
-                    await new Promise(resolve => setTimeout(resolve, 1000));
-                    if (allowance.transactionHash) break;
-                }
+                await new Promise(resolve => setTimeout(resolve, 10000));
 
                 // Alternative Asset Bridging & Deposit
                 const assetAddress = token.contractAddress;

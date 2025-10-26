@@ -25,7 +25,7 @@ export async function instantSwap(_srcToken: string, _dstToken: string, _amount:
         srcToken = chain.tokens.find(t => t.symbol.toUpperCase() === _srcToken.toUpperCase());
     }
     if (_dstToken == 'ETH') {
-        srcToken = sdk.chainList.getNativeToken(VAULT_CHAIN_ID);
+        dstToken = sdk.chainList.getNativeToken(VAULT_CHAIN_ID);
     } else {
         dstToken = chain.tokens.find(t => t.symbol.toUpperCase() === _dstToken.toUpperCase());
     }
