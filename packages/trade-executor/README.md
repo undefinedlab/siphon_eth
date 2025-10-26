@@ -48,7 +48,7 @@ You must create and activate the correct Python environment:
 
 1.  **Navigate to the executor directory**
     ```bash
-    cd syphon-executor
+    cd trade-executor
     ```
 2.  **Create the environment (if not done already)**
     ```bash
@@ -66,6 +66,9 @@ You must create and activate the correct Python environment:
 ### Configuration & Initialization
 
 Before starting the server, you must provide your network addresses and initialize the database.
+
+**python init_db.py**
+    
 
 **A. Update Configuration**
 
