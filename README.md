@@ -103,48 +103,53 @@
 ## 🛠️ Technical Architecture
 
 ### 🔧 Core Technologies
-
 <table>
   <tr>
     <td width="33%" align="center">
 
-#### 🔐 **FHE**
+#### 🔐 **FHE**  
 **Fully Homomorphic Encryption**  
 Enables computation on encrypted data
 
   </td>
     <td width="33%" align="center">
 
-#### 🎭 **ZK Proofs**
+#### 🎭 **ZK Proofs**  
 **Zero-Knowledge Proofs**  
 Proves correctness—no data revealed
 
   </td>
     <td width="33%" align="center">
 
-#### 🌉 **Avail Nexus SDK**
+#### 🌉 **Avail Nexus SDK**  
 **Cross-Chain Operations**  
 Seamless multi-chain execution
 
   </td>
   </tr>
+
   <tr>
     <td width="33%" align="center">
 
-#### 📈 **Pyth Network**
+#### 📈 **Pyth Network**  
 **Price Feeds & Randomness**  
 Reliable oracles and entropy
 
   </td>
     <td width="33%" align="center">
 
-#### 🛠️ **Hardhat**
+#### 🛠️ **Hardhat**  
 **Deployment Tool**  
 Flexible, developer-friendly smart contract deployment
 
   </td>
     <td width="33%" align="center">
-    </td>
+
+#### ⚙️ **EVM**  
+**Execution & Settlement Layer**  
+Secure, composable, and EVM-compatible foundation for DeFi
+
+  </td>
   </tr>
 </table>
 
@@ -214,16 +219,12 @@ Siphon Protocol should integrate multiple compliance mechanisms to address regul
 ## 📁 Project Structure
 ```
 siphon/
-├── 📂 circuits/              # ZK-SNARK circuits for private proofs
 │
-├── 📂 contracts/             # Solidity smart contracts for on-chain logic
-
 ├── 📂 docs/                  # Documentation
-
-├── 📂 packages/              # Reusable cryptographic and utility packages
-│   ├── fhe-lib/
-│   ├── zk-proofs/
-│   └── crypto-utils/
+├── 📂 packages/                 # Reusable cryptographic and utility packages
+│   ├──  fhe-lib/                 # FHE matchine engine and python orchestrator
+│   ├──  circuits/                # ZK-SNARK circuits for private proofs
+│   └──  contracts/               # Solidity smart contracts for on-chain logic
 │
 ├── 📂 public/                # Static assets
 
