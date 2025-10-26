@@ -17,7 +17,7 @@ The Executor is the central backend in a four-part distributed architecture:
 * **Order Persistence:** Stores the complete, encrypted Order Book in a SQLite database (`strategies.db`), ensuring reliable tracking of all active trading strategies.
 * **Real-Time Oracle:** Runs a background scheduler that fetches live price data from the Pyth Network Hermes API on a fixed interval.
 * **FHE Orchestration:** Passes the live market price (plaintext) and the encrypted strategy bounds (ciphertext) to the Rust FHE Engine (`localhost:5001`) for a secure, private comparison.
-* **Transaction Finalization:** Upon receiving a `true` signal from the Rust engine, it simulates and finalizes the authorized, on-chain swap transaction via a local Anvil node.
+* **Transaction Finalization:** Upon receiving a `true` signal from the Rust engine, it simulates and finalizes the authorized, on-chain swap transaction.
 
 ## Technology Stack
 
