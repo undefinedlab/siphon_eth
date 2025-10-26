@@ -145,6 +145,16 @@ Flexible, developer-friendly smart contract deployment
   </td>
     <td width="33%" align="center">
     </td>
+
+    <td width="33%" align="center">
+
+#### ⚙️ **EVM**
+**Execution & Settlement Layer**  
+Secure, composable, and EVM-compatible foundation for DeFi
+
+  </td>
+    <td width="33%" align="center">
+    </td>
   </tr>
 </table>
 
@@ -214,16 +224,12 @@ Siphon Protocol should integrate multiple compliance mechanisms to address regul
 ## 📁 Project Structure
 ```
 siphon/
-├── 📂 circuits/              # ZK-SNARK circuits for private proofs
 │
-├── 📂 contracts/             # Solidity smart contracts for on-chain logic
-
 ├── 📂 docs/                  # Documentation
-
-├── 📂 packages/              # Reusable cryptographic and utility packages
-│   ├── fhe-lib/
-│   ├── zk-proofs/
-│   └── crypto-utils/
+├── 📂 packages/                 # Reusable cryptographic and utility packages
+│   ├──  fhe-lib/                 # FHE matchine engine and python orchestrator
+│   ├──  circuits/                # ZK-SNARK circuits for private proofs
+│   └──  contracts/               # Solidity smart contracts for on-chain logic
 │
 ├── 📂 public/                # Static assets
 
