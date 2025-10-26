@@ -105,12 +105,7 @@ export async function deposit(_srcChainName: string, _token: string, _amount: st
                         "type": "function"
                     }],
                     functionName: 'deposit',
-                    buildFunctionParams: (
-                        token: SUPPORTED_TOKENS,
-                        amount: string,
-                        chainId: SUPPORTED_CHAINS_IDS,
-                        userAddress: `0x${string}`
-                    ) => {
+                    buildFunctionParams: () => {
                         return { functionParams: [NATIVE_TOKEN, decAmount, precommitment] };
                     },
                     value: `0x${hexAmount}`
@@ -132,12 +127,7 @@ export async function deposit(_srcChainName: string, _token: string, _amount: st
                         "type": 'function',
                     }],
                     functionName: 'approve',
-                    buildFunctionParams: (
-                        token: SUPPORTED_TOKENS,
-                        amount: string,
-                        chainId: SUPPORTED_CHAINS_IDS,
-                        userAddress: `0x${string}`
-                    ) => {
+                    buildFunctionParams: () => {
                         return { functionParams: [ENTRYPOINT_ADDRESS, decAmount] };
                     }
                 });
@@ -183,12 +173,7 @@ export async function deposit(_srcChainName: string, _token: string, _amount: st
                         "type": "function"
                     }],
                     functionName: 'deposit',
-                    buildFunctionParams: (
-                        token: SUPPORTED_TOKENS,
-                        amount: string,
-                        chainId: SUPPORTED_CHAINS_IDS,
-                        userAddress: `0x${string}`
-                    ) => {
+                    buildFunctionParams: () => {
                         return { functionParams: [assetAddress, decAmount, precommitment] };
                     },
                     waitForReceipt: true
@@ -260,11 +245,11 @@ export async function withdraw(_chain: string, _token: string, _amount: string, 
     const withdrawnValue = BigInt(sdk.utils.parseUnits(_amount, token.decimals).toString());
 
     // Generate new nullifier and secret for the change output (if any)
-    const newSecret = poseidon.F.toObject(poseidon([existingSecret, 1n]));
-    const newNullifier = poseidon.F.toObject(poseidon([existingNullifier, 1n]));
+    const newSecret = F.toObject(poseidon([existingSecret, 1n]));
+    const newNullifier = F.toObject(poseidon([existingNullifier, 1n]));
     const changeValue = existingValue - withdrawnValue;
     const newCommitment = changeValue > 0n
-        ? poseidon.F.toObject(poseidon([newSecret, newNullifier, changeValue]))
+        ? F.toObject(poseidon([newSecret, newNullifier, changeValue]))
         : 0n;
 
     // Get all commitments from local storage to build a local Merkle tree
@@ -404,12 +389,7 @@ export async function withdraw(_chain: string, _token: string, _amount: string, 
             "type": "function"
         }],
         functionName: 'withdraw',
-        buildFunctionParams: (
-            token: SUPPORTED_TOKENS,
-            amount: string,
-            chainId: SUPPORTED_CHAINS_IDS,
-            userAddress: `0x${string}`
-        ) => {
+        buildFunctionParams: () => {
             return {
                 functionParams: [
                     tokenAddress,
