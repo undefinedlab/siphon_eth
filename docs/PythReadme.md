@@ -36,7 +36,7 @@ let encrypted_bool_result = match condition {
 };
 ```
 
-### 🔹 Guide & Resources
+## 🔹 Guide & Resources
 
 For full implementation details, follow the official Pyth EVM Integration Guide —
 it walks through setting up Hermes, calling updatePriceFeeds(), and consuming prices in under five minutes:
