@@ -189,6 +189,10 @@ export async function withdraw(_chain: string, _token: string, _amount: string, 
     const zkData = await generateZKData(VAULT_CHAIN_ID, token, _amount, _recipient);
     const withdrawalTxData = zkData.withdrawalTxData;
 
+    if ('error' in zkData) {
+        return { success: false, error: zkData.error };
+    }
+    
     console.log("Token Address: ", tokenAddress);
     console.log("Amount: ", decAmount);
     console.log("Nullifier: ", withdrawalTxData.nullifierHash.toString());
