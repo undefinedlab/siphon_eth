@@ -4,8 +4,7 @@ import { buildPoseidon } from "circomlibjs";
 const WASM_PATH = '/zk/main_js/main.wasm';
 const ZKEY_PATH = '/zk/circuit.zkey';
 
-const snarkjs = require('snarkjs');
-
+import * as snarkjs from 'snarkjs';
 /**
  * Generate ZK proof for withdrawal
  * @param {Object} withdrawalData - The withdrawal parameters
