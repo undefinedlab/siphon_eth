@@ -159,33 +159,33 @@ Secure, composable, and EVM-compatible foundation for DeFi
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │ Layer 5: Liquidity Interface                                │
-│ - Public DEX aggregators                                     │
-│ - Cross-chain bridges                                        │
-│ - Modular design for privacy-native assets                   │
+│ - Public DEX aggregators                                    │
+│ - Cross-chain bridges                                       │
+│ - Modular design for privacy-native assets                  │
 └─────────────────────────────────────────────────────────────┘
 ┌─────────────────────────────────────────────────────────────┐
 │ Layer 4: Verification & Settlement                          │
 │ - ZK proof of correct execution                             │
-│ - On-chain verification                                      │
-│ - Cryptographic guarantees                                    │
+│ - On-chain verification                                     │
+│ - Cryptographic guarantees                                  │
 └─────────────────────────────────────────────────────────────┘
 ┌─────────────────────────────────────────────────────────────┐
 │ Layer 3: Confidential Execution Environment (FHE Engine)    │
-│ - Encrypted mempool                                          │
-│ - Computation on encrypted data                              │
-│ - Order matching & slippage calculation                      │
+│ - Encrypted mempool                                         │
+│ - Computation on encrypted data                             │
+│ - Order matching & slippage calculation                     │
 └─────────────────────────────────────────────────────────────┘
 ┌─────────────────────────────────────────────────────────────┐
-│ Layer 2: Shielded Pool                                       │
-│ - Incremental Merkle trees                                   │
-│ - Zero-knowledge membership proofs                           │
-│ - Nullifier system for double-spend prevention               │
+│ Layer 2: Shielded Pool                                      │
+│ - Incremental Merkle trees                                  │
+│ - Zero-knowledge membership proofs                          │
+│ - Nullifier system for double-spend prevention              │
 └─────────────────────────────────────────────────────────────┘
 ┌─────────────────────────────────────────────────────────────┐
-│ Layer 1: Vault Contract                                      │
-│ - Trustless escrow for public assets                         │
-│ - ETH, USDC, WBTC and more                                   │
-│ - Release on valid ZK proof verification                     │
+│ Layer 1: Vault Contract                                     │
+│ - Trustless escrow for public assets                        │
+│ - ETH, USDC, WBTC and more                                  │
+│ - Release on valid ZK proof verification                    │
 └─────────────────────────────────────────────────────────────┘
 ```
 
