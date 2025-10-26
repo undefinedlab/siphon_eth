@@ -22,9 +22,16 @@ export default function Nav() {
         </div>
 
         <div className="nav-items">
-          <p>docs</p>
-          <p>about</p>
-          
+
+        
+  <a href="https://github.com/undefinedlab/siphon_eth" target="_blank" rel="noopener noreferrer">
+    docs
+  </a>
+</p>  <p>
+  <a href="https://github.com/undefinedlab/siphon_eth" target="_blank" rel="noopener noreferrer">
+    about
+  </a>
+</p>
           <button onClick={() => setShowSwapModal(true)} className="nav-link">swap</button>
         </div>
       </nav>
