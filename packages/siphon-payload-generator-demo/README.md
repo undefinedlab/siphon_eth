@@ -1,82 +1,44 @@
-Siphon Payload Generator (Rust FHE Service)
+# 🧠 Siphon Payload Generator (Rust FHE Service)
 
-This service is a crucial component of the Siphon protocol, acting as a local, trusted client-side server. Its sole purpose is to perform the FHE key generation and encryption, protecting the user's secrets before they are submitted to the main Python orchestrator.
+## Overview
 
-It functions as an "encryption-as-a-service" server that runs on the user's local machine, providing a secure, reliable bridge between the web-based dApp and the backend.
+The **Siphon Payload Generator** is a crucial component of the **Siphon protocol**, acting as a **local, trusted client-side encryption server**.  
+Its sole purpose is to perform **Fully Homomorphic Encryption (FHE)** key generation and encryption, ensuring user secrets are securely protected before being submitted to the main **Python Orchestrator**.
 
-Architectural Role
+This service functions as an **"Encryption-as-a-Service"** layer running on the user's local machine, creating a secure, reliable bridge between the web-based dApp (Next.js) and the backend computation layer (Python).
 
-This service exists as a pragmatic solution to the current challenges of client-side cryptography. The data flow for creating a strategy is as follows:
+---
 
-Frontend dApp (Next.js): The user enters their plaintext strategy (e.g., upper_bound: 4000, lower_bound: 3800) into the UI running on localhost:3000.
+## 🏗️ Architectural Role
 
-API Call 1 (dApp -> Payload Generator): The dApp's strategy.ts SDK sends this plaintext data to this Rust server's /generatePayload endpoint (running on localhost:5003).
+This service exists as a pragmatic solution to the challenges of **client-side cryptography** in the current web ecosystem.
 
-FHE Encryption (This Server): This service:
+### Data Flow Overview
 
-Generates a new FHE ClientKey and ServerKey using the tfhe-rs library.
+1. **Frontend dApp (Next.js)**
+   - Runs on: `localhost:3000`
+   - The user enters a plaintext trading strategy (e.g. `upper_bound: 4000`, `lower_bound: 3800`)
+   - The dApp’s `strategy.ts` SDK sends this plaintext data to the Rust Payload Generator
 
-Encrypts the upper_bound and lower_bound into ciphertexts.
+2. **Payload Generator (Rust FHE Service)**
+   - Runs on: `localhost:5003`
+   - Generates **FHE ClientKey** and **ServerKey** using the `tfhe-rs` library  
+   - Encrypts the upper and lower bounds into ciphertexts  
+   - Assembles the encrypted payload with metadata and keys  
+   - Forwards the payload to the Orchestrator for computation
 
-Assembles the final, private StrategyPayload, including the hex-encoded encrypted data and keys.
+3. **Python Orchestrator**
+   - Runs on: `localhost:5000`
+   - Receives the encrypted payload for trade execution, validation, and state update
 
-API Call 2 (Payload Generator -> Orchestrator): This service immediately forwards the fully encrypted payload to the Python Trade Executor (running on localhost:5000) for processing.
-
-+----------------+      (1. Plaintext Input)      +-------------------------+
-|                |  POST /generatePayload         |                         |
-|  Next.js dApp  | -----------------------------> |  Rust Payload Server    |
-| (localhost:3000) |                                |  (This Service @ 5003)  |
-|                |                                |                         |
-+----------------+      (4. Encrypted Payload)     |  (2. FHE Encryption)    |
-                        <---------------------     |  (3. Forwarding)        |
-                                                   +-----------|-------------+
-                                                               | (Encrypted Payload)
-                                                               | POST /createStrategy
-                                                               v
-                                                   +-------------------------+
-                                                   |  Python Orchestrator    |
-                                                   |  (localhost:5000)       |
-                                                   +-------------------------+
+---
 
 
-API Endpoint
-
-POST /generatePayload
-
-This endpoint receives the user's raw strategy, encrypts it, and forwards it to the orchestrator.
-
-Request Body (StrategyInput):
-
-{
-  "user_id": "0x123...",
-  "strategy_type": "BRACKET_ORDER_LONG",
-  "asset_in": "ETH",
-  "asset_out": "USDC",
-  "amount": 1.5,
-  "upper_bound": 4000.0,
-  "lower_bound": 3800.0
-}
 
 
-Success Response (StrategyPayload):
-(This is also the payload forwarded to the Python server)
-
-{
-  "user_id": "0x123...",
-  "strategy_type": "BRACKET_ORDER_LONG",
-  "asset_in": "ETH",
-  "asset_out": "USDC",
-  "amount": 
-  "zkp_data": 
-  "encrypted_upper_bound":
-  "encrypted_lower_bound": 
-  "server_key": 
-  "encrypted_client_key": 
-  "payload_id":
-}
 
 
-Setup & Running
+## Setup & Running
 
 This server must be running locally alongside the other backend services.
 
@@ -87,22 +49,43 @@ cd syphon-payload-generator
 
 Build and Run:
 
-# This will download all Rust dependencies (axum, tfhe, etc.) and compile
-cargo run
+This will download all Rust dependencies (axum, tfhe, etc.) and compile
 
+**cargo run**
 
 The server will start and listen on http://127.0.0.1:5003.
 
-Academic Observation & Suggestions for Improvement
+# Academic Observation & Suggestions for Improvement
 
 This service is a pragmatic architectural choice driven by the current landscape of web-based cryptography.
 
-The WASM Instability Problem: The primary motivation for this server is the current unreliability of the Rust-to-WebAssembly toolchain for complex cryptographic libraries. As of mid-2025, the official rustwasm GitHub organization is being sunset (see: [Sunsetting the rustwasm GitHub org](https://blog.rust-lang.org/inside-rust/2025/07/21/sunsetting-the-rustwasm-github-org/)). This has created ecosystem instability, making it difficult to reliably compile and run advanced libraries like Zama's tfhe-rs in a browser environment (like our Next.js dApp). This local Rust server "aborts" the need for direct frontend encryption, providing a stable, native Rust environment for the task.
+1) The WASM Instability Problem: The primary motivation for this server is the current unreliability of the Rust-to-WebAssembly toolchain for complex cryptographic libraries. As of mid-2025, the official rustwasm GitHub organization is being sunset (see: [Sunsetting the rustwasm GitHub org](https://blog.rust-lang.org/inside-rust/2025/07/21/sunsetting-the-rustwasm-github-org/)). This has created ecosystem instability, making it difficult to reliably compile and run advanced libraries like Zama's tfhe-rs in a browser environment (like our Next.js dApp). This local Rust server "aborts" the need for direct frontend encryption, providing a stable, native Rust environment for the task.
 
-Performance (Computation Time): FHE key generation and encryption are computationally non-trivial. Offloading this from the browser's single JavaScript thread to a dedicated, multi-threaded native Rust process (even locally) ensures the dApp remains fast, responsive, and does not freeze the user's UI.
+2) Performance (Computation Time): FHE key generation and encryption are computationally non-trivial. Offloading this from the browser's single JavaScript thread to a dedicated, multi-threaded native Rust process (even locally) ensures the dApp remains fast, responsive, and does not freeze the user's UI.
 
-Needs for Optimization: The core FHE logic (in the other Rust FHE Engine service) is the primary performance bottleneck. The tfhe-rs parameters currently in use are for correctness, not speed. A production-ready system would require significant benchmarking and parameter tuning to reduce homomorphic computation time.
+3) Needs for Optimization: The core FHE logic (in the other Rust FHE Engine service) is the primary performance bottleneck. The tfhe-rs parameters currently in use are for correctness, not speed. A production-ready system would require significant benchmarking and parameter tuning to reduce homomorphic computation time.
 
-Architectural Complexity: This 4-service architecture (dApp -> Payload Server -> Python Orchestrator -> FHE Engine) is robust but introduces operational complexity and network latency between multiple local services. The system relies on not just Rust, but also Python and TypeScript, each handling a different part of the logic.
+4) Architectural Complexity: This 4-service architecture (dApp -> Payload Server -> Python Orchestrator -> FHE Engine) is robust but introduces operational complexity and network latency between multiple local services. The system relies on not just Rust, but also Python and TypeScript, each handling a different part of the logic.
 
-Ideal Future State: The ultimate goal remains true client-side encryption. Once the tfhe-rs WASM toolchain (or a viable alternative) stabilizes, this payload generator's logic should be compiled to WASM and moved entirely into the Next.js dApp. This would eliminate this server, remove a network hop, and create a true two-service architecture (dApp -> Backend).
+5) Ideal Future State: The ultimate goal remains true client-side encryption. Once the tfhe-rs WASM toolchain (or a viable alternative) stabilizes, this payload generator's logic should be compiled to WASM and moved entirely into the Next.js dApp. This would eliminate this server, remove a network hop, and create a true two-service architecture (dApp -> Backend).
+
+
+## 🔁 Data Flow Diagram
+
+```text
++----------------+       (1. Plaintext Input)       +-------------------------+
+|                |  POST /generatePayload           |                         |
+|  Next.js dApp  | -------------------------------> |  Rust Payload Server    |
+| (localhost:3000) |                                |  (This Service @ 5003)  |
+|                |                                |                         |
++----------------+                                     |  (2. FHE Encryption)    |
+                                                       |  (3. Forwarding)        |
+                                                    +-----------|-------------+
+                                                                | (Encrypted Payload)
+                                                                | POST /createStrategy
+                                                                v
+                                                    +-------------------------+
+                                                    |  Python Orchestrator    |
+                                                    |  (localhost:5000)       |
+                                                    +-------------------------+
+---
