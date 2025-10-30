@@ -7,7 +7,7 @@ import {ISwapRouter} from "@uniswap/v3-periphery/contracts/interfaces/ISwapRoute
 
 contract NativeVault is Vault {
 
-    constructor(address _asset) Vault(_asset) {}
+    constructor(address _asset, address _verifier) Vault(_asset, _verifier) {}
 
     function _receive(address, uint256 _amount) internal override {
         if(msg.value != _amount) revert AmountMismatch();

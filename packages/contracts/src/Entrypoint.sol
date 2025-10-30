@@ -5,6 +5,7 @@ import {IVault} from "./interfaces/IVault.sol";
 import {IEntrypoint} from "./interfaces/IEntrypoint.sol";
 import {NativeVault} from "./states/NativeVault.sol";
 import {AlternativeVault} from "./states/AlternativeVault.sol";
+import {PlonkVerifier} from './verifiers/WithdrawalVerifier.sol';
 import {IERC20} from '@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol';
 
 contract Entrypoint is IEntrypoint {
@@ -20,6 +21,9 @@ contract Entrypoint is IEntrypoint {
 
     /// @notice The vault count nonce
     uint32 public nonce;
+
+    /// @notice The ZK verifier
+    PlonkVerifier internal immutable verifier;
 
     /// @notice The SwapRouter address
     address public immutable swapRouter;
@@ -37,6 +41,9 @@ contract Entrypoint is IEntrypoint {
         // Initialize vault count nonce
         nonce = 0;
 
+        // Initialize ZK verifier
+        verifier = new PlonkVerifier();
+
         // Store the Uniswap V3 SwapRouter address
         swapRouter = _swapRouterAddress;
     }
@@ -53,8 +60,8 @@ contract Entrypoint is IEntrypoint {
 
             // Deploy vault and store to mapping
             vaults[asset] = (asset == NATIVE_ASSET)
-                ? IVault(new NativeVault{salt: _salt}(asset))
-                : IVault(new AlternativeVault{salt: _salt}(asset));
+                ? IVault(new NativeVault{salt: _salt}(asset, address(verifier)))
+                : IVault(new AlternativeVault{salt: _salt}(asset, address(verifier)));
         }
     }
 

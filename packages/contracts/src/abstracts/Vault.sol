@@ -35,10 +35,10 @@ abstract contract Vault is IVault {
      * @notice Initialize the vault with the given asset
      * @param _asset The address of asset being stored in this vault
      */
-    constructor(address _asset) {
+    constructor(address _asset, address _verifier) {
         asset = _asset;
         merkleTree = new MerkleTree();
-        verifier = new PlonkVerifier();
+        verifier = PlonkVerifier(_verifier);
     }
 
     /*--------------------------------------------------------------------------------------------

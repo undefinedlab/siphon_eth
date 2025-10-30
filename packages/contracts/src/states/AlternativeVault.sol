@@ -9,7 +9,7 @@ import {ISwapRouter} from "@uniswap/v3-periphery/contracts/interfaces/ISwapRoute
 contract AlternativeVault is Vault {
     using SafeERC20 for IERC20;
 
-    constructor(address _asset) Vault(_asset) {}
+    constructor(address _asset, address _verifier) Vault(_asset, _verifier) {}
 
     function _receive(address _from, uint256 _amount) internal override {
         if(msg.value > 0) revert NativeFundReceived();
