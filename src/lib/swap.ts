@@ -4,7 +4,6 @@ import { generateZKData, encodeProof } from './zkHandler';
 
 export const sdk = getNexusSDK();
 
-'0x9A1909525Fb2810b87Fa370015d1cd6b2F5F8fcc'
 const VAULT_CHAIN_ID = 11155111  // Vault contract is located in ETH Sepolia
 const NATIVE_TOKEN = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE";
 const ENTRYPOINT_ADDRESS = '0x6163B029aA6AdDd692C8d622f7504feafe35248a';
