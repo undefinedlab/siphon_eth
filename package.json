@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "postinstall": "patch-package"
   },
   "dependencies": {
     "@avail-project/nexus-core": "0.0.2-beta.7",
@@ -14,6 +15,7 @@
     "circomlibjs": "^0.1.7",
     "ethers": "^6.15.0",
     "next": "15.5.5",
+    "patch-package": "^8.0.1",
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "snarkjs": "^0.7.5",
