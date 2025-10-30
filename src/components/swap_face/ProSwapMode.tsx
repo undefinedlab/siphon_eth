@@ -391,7 +391,7 @@ export default function ProSwapMode({
                       <option value="Ethereum Sepolia">Ethereum</option>
                       <option value="Base Sepolia">Base</option>
                       <option value="Arbitrum Sepolia">Arbitrum</option>
-                      <option value="Optimism Sepolia">Optimism</option>
+                      <option value="OP Sepolia">Optimism</option>
                     </select>
                   </div>
                 </div>
@@ -798,7 +798,7 @@ export default function ProSwapMode({
                       <option value="Ethereum Sepolia">Ethereum</option>
                       <option value="Base Sepolia" disabled>Base</option>
                       <option value="Arbitrum Sepolia" disabled>Arbitrum</option>
-                      <option value="Optimism Sepolia" disabled>Optimism</option>
+                      <option value="OP Sepolia" disabled>Optimism</option>
                       </select>
                     </div>
                   </div>
