@@ -6,7 +6,7 @@ export const sdk = getNexusSDK();
 
 const VAULT_CHAIN_ID = 11155111  // Vault contract is located in ETH Sepolia
 const NATIVE_TOKEN = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE";
-const ENTRYPOINT_ADDRESS = '0x6163B029aA6AdDd692C8d622f7504feafe35248a';
+const ENTRYPOINT_ADDRESS = '0x16E21889375Df12d0EbC31759d771d58A0e75fFe';
 const FEE = 3000;
 const MIN_AMOUNT_OUT = 0;
 

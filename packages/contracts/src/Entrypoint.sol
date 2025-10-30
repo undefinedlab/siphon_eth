@@ -19,9 +19,6 @@ contract Entrypoint is IEntrypoint {
     /// @notice The contract owner
     address public owner;
 
-    /// @notice The vault count nonce
-    uint32 public nonce;
-
     /// @notice The ZK verifier
     PlonkVerifier internal immutable verifier;
 
@@ -38,9 +35,6 @@ contract Entrypoint is IEntrypoint {
         // Store owner address
         owner = (_owner == address(0)) ? msg.sender : _owner;
 
-        // Initialize vault count nonce
-        nonce = 0;
-
         // Initialize ZK verifier
         verifier = new PlonkVerifier();
 
@@ -53,15 +47,11 @@ contract Entrypoint is IEntrypoint {
         // Deploy vault for each asset then store to mapping
         for (uint256 i = 0; i < assets.length; i++) {
             address asset = address(assets[i]);
-            if (vaults[asset] != IVault(address(0))) revert VaultAlreadyRegistered();
-
-            // Create _salt to optimize gas-efficiency (CREATE2)
-            bytes32 _salt = keccak256(abi.encodePacked(asset, nonce++));
 
             // Deploy vault and store to mapping
             vaults[asset] = (asset == NATIVE_ASSET)
-                ? IVault(new NativeVault{salt: _salt}(asset, address(verifier)))
-                : IVault(new AlternativeVault{salt: _salt}(asset, address(verifier)));
+                ? IVault(new NativeVault(asset, address(verifier)))
+                : IVault(new AlternativeVault(asset, address(verifier)));
         }
     }
 
