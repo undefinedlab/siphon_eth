@@ -6,7 +6,7 @@ export const sdk = getNexusSDK();
 
 const VAULT_CHAIN_ID = 11155111  // Vault contract is located in ETH Sepolia
 const NATIVE_TOKEN = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE";
-const ENTRYPOINT_ADDRESS = '0x9A1909525Fb2810b87Fa370015d1cd6b2F5F8fcc';
+const ENTRYPOINT_ADDRESS = '0x6163B029aA6AdDd692C8d622f7504feafe35248a';
 
 export async function deposit(_srcChainName: string, _token: string, _amount: string) {
     // Retrieve source chain & token data
@@ -52,7 +52,7 @@ export async function deposit(_srcChainName: string, _token: string, _amount: st
                     contractAbi: [{
                         "inputs": [
                             {
-                                "internalType": "contract IERC20",
+                                "internalType": "address",
                                 "name": "_asset",
                                 "type": "address"
                             },
